@@ -1,0 +1,6 @@
+// Replace the contents of frontend/app/page.tsx with this:
+import FittingRoomLayout from "@/components/FittingRoomLayout";
+
+export default function Page() {
+  return <FittingRoomLayout />;
+}
