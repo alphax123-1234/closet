@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CLOSET | Uganda's Best Prices</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black font-sans text-neutral-200 antialiased">
+<div id="site-header"></div>
+
+<main class="mx-auto max-w-7xl space-y-5 px-3 py-4 md:space-y-8 md:px-8 md:py-6">
+
+  <!-- HERO: full-width promotional banner -->
+  <section class="relative overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-950 px-6 py-14 md:px-16 md:py-28"
+           style="background-image: radial-gradient(60% 90% at 85% 10%, rgba(251,191,36,.22), transparent 60%), radial-gradient(40% 60% at 5% 100%, rgba(255,255,255,.07), transparent 70%)">
+    <p class="text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">Limited-time offers</p>
+    <h1 class="mt-4 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-white md:text-6xl">
+      CLOSET: Uganda's Best Prices! <span class="text-amber-400">Up to 60% OFF</span>
+    </h1>
+    <p class="mt-4 max-w-xl text-neutral-400 md:text-lg">Fresh styles from Kampala boutiques. Try them on a model before you buy.</p>
+    <a href="fashion.html" class="mt-8 inline-block rounded-lg bg-amber-400 px-8 py-3.5 text-sm font-bold uppercase tracking-wider text-black transition hover:bg-amber-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Shop Now</a>
+  </section>
+
+  <!-- PROMO GRID: balanced multi-column teasers -->
+  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" id="promos"></section>
+</main>
+
+<footer class="mt-10 border-t border-neutral-800 py-6 text-center text-xs text-neutral-500">© CLOSET. Kampala, Uganda.</footer>
+
+<script>
+// ===== Shared: header + helpers (CLOSET) =====
+const WHATSAPP_NUMBER = "256700000000"; // placeholder: country code, no + or spaces
+const ugx = (n) => "UGX " + n.toLocaleString("en-UG");
+const ic = (p) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICONS = {
+  search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  user: '<path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/>',
+  help: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+  cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.5L22 7H6"/>',
+};
+
+// Global header: logo (left) | search (centre) | Account, Help, Cart (right)
+function renderHeader({ cartHref }) {
+  const btn = "flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-neutral-300 transition hover:bg-neutral-900 hover:text-white";
+  document.getElementById("site-header").innerHTML = `
+  <header class="sticky top-0 z-40 border-b border-neutral-800 bg-black/90 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-3 py-3 md:px-8">
+      <a href="index.html" class="text-2xl font-bold tracking-[0.3em] text-white">CLOSET</a>
+
+      <form action="fashion.html" class="order-last flex w-full items-center gap-2 rounded-full border border-neutral-700 bg-neutral-950 px-4 text-neutral-400 focus-within:border-amber-400 md:order-none md:mx-auto md:w-auto md:max-w-xl md:flex-1">
+        ${ic(ICONS.search)}
+        <input id="q" name="q" type="search" placeholder="Search products, brands and boutiques" class="w-full bg-transparent py-2.5 text-sm text-white outline-none placeholder:text-neutral-500" aria-label="Search">
+      </form>
+
+      <div class="ml-auto flex items-center gap-1 md:ml-0">
+        <details class="relative">
+          <summary class="${btn} cursor-pointer list-none">${ic(ICONS.user)}<span class="hidden sm:inline">Account</span></summary>
+          <div class="absolute right-0 mt-2 w-44 rounded-lg border border-neutral-800 bg-neutral-950 p-1 text-sm shadow-xl">
+            <button class="block w-full rounded px-3 py-2 text-left text-neutral-300 hover:bg-neutral-900">Sign in</button>
+            <button class="block w-full rounded px-3 py-2 text-left text-neutral-300 hover:bg-neutral-900">Create account</button>
+            <button class="block w-full rounded px-3 py-2 text-left text-neutral-300 hover:bg-neutral-900">My orders</button>
+          </div>
+        </details>
+        <a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello, I need help with CLOSET")}" target="_blank" rel="noopener" class="${btn}">${ic(ICONS.help)}<span class="hidden sm:inline">Help</span></a>
+        <a id="cartLink" href="${cartHref}" class="${btn}">${ic(ICONS.cart)}<span class="hidden sm:inline">Cart</span>
+          <span id="cartCount" class="min-w-5 rounded-full bg-amber-400 px-1.5 text-center text-xs font-bold text-black">0</span></a>
+      </div>
+    </div>
+  </header>`;
+}
+
+renderHeader({ cartHref: "fashion.html" });
+
+const promos = [
+  { tag: "Up to 60% off", title: "FASHION CLEARANCE", text: "Last-chance prices on tops and bottoms.", href: "fashion.html" },
+  { tag: "On eligible orders", title: "FREE SHIPPING", text: "Delivery across Kampala on selected boutiques.", href: "fashion.html" },
+  { tag: "Just landed", title: "NEW ARRIVALS", text: "Fresh Kitenge, Ankara and linen pieces.", href: "fashion.html" },
+  { tag: "New", title: "TRY BEFORE YOU BUY", text: "Dress a model with any item in seconds.", href: "fashion.html" },
+];
+document.getElementById("promos").innerHTML = promos.map((p) => `
+  <a href="${p.href}" class="group flex min-h-48 flex-col justify-between rounded-2xl border border-neutral-800 bg-neutral-950 p-6 transition duration-300 hover:-translate-y-1 hover:border-amber-400/60 hover:shadow-[0_12px_40px_rgba(251,191,36,.12)]">
+    <div>
+      <span class="text-xs font-semibold uppercase tracking-widest text-amber-400">${p.tag}</span>
+      <h2 class="mt-2 text-xl font-bold tracking-wide text-white">${p.title}</h2>
+      <p class="mt-2 text-sm text-neutral-400">${p.text}</p>
+    </div>
+    <span class="mt-6 text-sm font-medium text-white group-hover:text-amber-400">Shop now →</span>
+  </a>`).join("");
+</script>
+</body>
+</html>
