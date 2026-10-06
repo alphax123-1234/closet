@@ -31,7 +31,7 @@
       <button id="menuBtn" aria-label="Menu" aria-expanded="false" class="rounded-lg p-2.5 text-neutral-300 hover:bg-card hover:text-white">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <a href="#home" class="text-xl font-extrabold tracking-[0.25em] text-white md:text-2xl md:tracking-[0.3em]">CLOSET</a>
+      <a id="logo" href="#home" class="select-none text-xl font-extrabold tracking-[0.25em] text-white md:text-2xl md:tracking-[0.3em]">CLOSET</a>
     </div>
 
     <!-- Search: gold SEARCH button inside the far right of the bar -->
@@ -67,11 +67,8 @@
     </nav>
   </div>
   <nav id="drawer" class="hidden border-t border-neutral-800 bg-card px-3 py-2 text-sm md:px-8">
-    <a href="#home" class="mr-5 inline-block py-2 hover:text-gold">Home</a>
-    <a href="#fashion" class="mr-5 inline-block py-2 hover:text-gold">Fashion</a>
-    <button data-q="jacket" class="mr-5 inline-block py-2 hover:text-gold">Jackets</button>
-    <button data-q="jeans" class="mr-5 inline-block py-2 hover:text-gold">Jeans</button>
-    <button data-q="shirt" class="inline-block py-2 hover:text-gold">Shirts</button>
+    <a href="#home" class="mr-6 inline-block py-2 hover:text-gold">Home</a>
+    <a href="#fashion" class="inline-block py-2 hover:text-gold">Fashion</a>
   </nav>
 </header>
 
@@ -79,15 +76,18 @@
 
 <!-- ================= PAGE 1: HOME ================= -->
 <section id="view-home" class="hidden">
-  <div class="relative overflow-hidden rounded-3xl border border-neutral-800 bg-card px-5 py-14 md:px-16 md:py-32"
-       style="background-image: radial-gradient(55% 90% at 90% 0%, rgba(255,193,7,.22), transparent 62%), radial-gradient(40% 60% at 0% 100%, rgba(255,255,255,.07), transparent 70%)">
-    <p class="text-xs font-semibold uppercase tracking-[0.3em] text-gold">Thrift · Second hand · Kampala</p>
-    <h1 class="mt-4 max-w-3xl text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl md:text-6xl">CLOSET: Kampala's Best Hand-Picked Thrift Deals!</h1>
-    <p class="mt-4 max-w-2xl text-sm text-neutral-300 md:text-lg">Quality-Checked Second Hand Clothes • Instant Bodaboda Delivery</p>
-    <a href="#fashion" class="mt-8 inline-block rounded-lg bg-gold px-8 py-3.5 text-sm font-bold uppercase tracking-wider text-black transition hover:bg-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Shop Now</a>
+  <!-- Jumia-style auto-sliding hero carousel -->
+  <div id="hero" class="relative overflow-hidden rounded-3xl border border-neutral-800 bg-card" role="group" aria-roledescription="carousel" aria-label="Featured offers">
+    <div id="track" class="flex transition-transform duration-700 ease-out"></div>
+    <button id="prevBtn" aria-label="Previous slide" class="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white ring-1 ring-white/20 hover:bg-black md:left-4 md:p-3">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+    <button id="nextBtn" aria-label="Next slide" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white ring-1 ring-white/20 hover:bg-black md:right-4 md:p-3">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+    <div id="dots" class="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2"></div>
   </div>
   <div id="promos" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 md:mt-8 md:gap-6"></div>
 </section>
+
 
 <!-- ================= PAGE 2: FASHION + TRY-ON ================= -->
 <section id="view-fashion" class="hidden">
@@ -181,6 +181,51 @@
   </div>
 </dialog>
 
+<!-- ================= SECRET ADMIN (opened by 5 quick clicks on the logo) ================= -->
+<dialog id="keyDialog" class="w-[min(92vw,22rem)] rounded-2xl border border-neutral-800 bg-card p-0 text-neutral-200 shadow-2xl backdrop:bg-black/80">
+  <form id="keyForm" class="p-5">
+    <label for="keyInput" class="text-sm font-semibold text-white">Administrator key</label>
+    <input id="keyInput" type="password" autocomplete="off" class="mt-2 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-gold">
+    <p id="keyErr" class="mt-2 hidden text-xs text-red-300">Incorrect key.</p>
+    <div class="mt-4 grid grid-cols-2 gap-2">
+      <button type="button" id="keyCancel" class="rounded-lg border border-neutral-700 py-2.5 text-sm hover:bg-neutral-800">Cancel</button>
+      <button type="submit" class="rounded-lg bg-gold py-2.5 text-sm font-bold text-black hover:bg-yellow-300">Unlock</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="adminDialog" class="w-[min(94vw,32rem)] rounded-2xl border border-neutral-800 bg-card p-0 text-neutral-200 shadow-2xl backdrop:bg-black/80">
+  <div class="max-h-[90dvh] overflow-y-auto p-5">
+    <h2 class="text-lg font-semibold text-white">⚙️ Test Admin Control Panel</h2>
+    <p class="mt-1 text-xs text-neutral-500">Items you add here are saved in this browser only, so you can test them on the mannequin.</p>
+    <form id="adminForm" class="mt-4 space-y-3 text-sm">
+      <label class="block"><span class="text-neutral-300">Title</span>
+        <input id="aTitle" required maxlength="60" placeholder="e.g. Vintage Denim Jacket" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-gold"></label>
+      <label class="block"><span class="text-neutral-300">Price (UGX)</span>
+        <input id="aPrice" type="number" inputmode="numeric" min="1000" step="500" required placeholder="25000" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-gold"></label>
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <label class="block"><span class="text-neutral-300">Gender model</span>
+          <select id="aGender" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option value="f">Female</option><option value="m">Male</option><option value="u">Both</option></select></label>
+        <label class="block"><span class="text-neutral-300">Layer position</span>
+          <select id="aSlot" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option value="outer">Outerwear</option><option value="tops" selected>Top</option><option value="bottoms">Bottoms</option></select></label>
+        <label class="block"><span class="text-neutral-300">Quality rating</span>
+          <select id="aCond" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option>Like New</option><option>Gently Loved</option><option>Good Condition</option></select></label>
+      </div>
+      <label class="block"><span class="text-neutral-300">Photo (from your device)</span>
+        <input id="aFile" type="file" accept="image/*" required class="mt-1 w-full rounded-lg border border-neutral-700 bg-black p-2 text-neutral-300 file:mr-3 file:rounded-md file:border-0 file:bg-gold file:px-3 file:py-2 file:font-semibold file:text-black"></label>
+      <label class="flex items-center gap-2 text-neutral-300"><input id="aRm" type="checkbox" checked class="h-4 w-4 accent-yellow-400"> Remove a plain background (works best on a white or solid backdrop)</label>
+      <img id="aPreview" alt="" class="mx-auto hidden max-h-40 rounded-lg bg-neutral-900">
+      <p id="aErr" role="alert" class="hidden text-xs text-red-300"></p>
+      <button type="submit" id="aSubmit" class="w-full rounded-lg bg-gold py-3 text-sm font-bold text-black hover:bg-yellow-300 disabled:opacity-50">Add to catalog</button>
+    </form>
+    <div class="mt-5 border-t border-neutral-800 pt-3">
+      <h3 class="text-sm font-semibold text-white">Uploaded items</h3>
+      <ul id="uploadList" class="mt-2 space-y-2 text-sm"></ul>
+    </div>
+    <button id="adminClose" class="mt-4 w-full rounded-lg border border-neutral-600 py-3 text-sm font-semibold hover:bg-neutral-800">Close</button>
+  </div>
+</dialog>
+
 <script>
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -214,19 +259,99 @@ $("segRoom").onclick = () => setMobileTab("room");
 $("segBrowse").onclick = () => setMobileTab("browse");
 $("helpLink").href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello CLOSET, I need help")}`;
 
-/* ===================== HOME TEASERS ===================== */
+/* ===================== ILLUSTRATED PLACEHOLDER ART =====================
+   Replace any of these with a real photo: set img: "images/your-photo.jpg" on the slide or tile. */
+const TEE = "M-40 -30 L-18 -40 Q0 -28 18 -40 L40 -30 L52 -2 L34 6 L30 -6 L30 52 L-30 52 L-30 -6 L-34 6 L-52 -2Z";
+const JKT = "M-44 -34 L-18 -44 L0 -30 L18 -44 L44 -34 L58 40 L40 46 L34 0 L34 60 L-34 60 L-34 0 L-40 46 L-58 40Z";
+const garment = (x, y, s, col, p) => `<path transform="translate(${x} ${y}) scale(${s})" d="${p}" fill="${col}" stroke="rgba(255,255,255,.3)" stroke-width="${1.5 / s}"/>`;
+const hang = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})" fill="none" stroke="#c9c9c9" stroke-width="2"><path d="M0 0v-9q0-10 10-10"/><path d="M-32 14 0 0 32 14Z"/></g>`;
+const art = (vb, inner) => `<svg class="absolute inset-0 h-full w-full" viewBox="${vb}" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${inner}</svg>`;
+const bg = (id, a, b, glow) => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>
+  <radialGradient id="${id}g" cx=".8" cy=".1" r=".7"><stop offset="0" stop-color="${glow}"/><stop offset="1" stop-color="rgba(0,0,0,0)"/></radialGradient></defs>
+  <rect width="100%" height="100%" fill="url(#${id})"/><rect width="100%" height="100%" fill="url(#${id}g)"/>`;
+
+const heroRack = () => { // slide 1: a dark rail of hanging thrift pieces
+  let s = bg("a1", "#050505", "#1c1505", "rgba(255,193,7,.35)") + '<path d="M0 120H900" stroke="#777" stroke-width="5"/>';
+  ["#8a6a3a", "#3f5f8a", "#e9e3d3", "#7a2e2e", "#2f3d33", "#a33b4c", "#5b7fb0"].forEach((c, i) => { const x = 70 + i * 125; s += hang(x, 120, 1.5) + garment(x, 214, 1.5, c, i % 3 === 1 ? JKT : TEE); });
+  return art("0 0 900 450", s + '<rect y="400" width="900" height="50" fill="rgba(255,255,255,.05)"/>');
+};
+const heroStacks = () => { // slide 2: folded piles from a market drop
+  let s = bg("a2", "#0d1a24", "#050505", "rgba(33,150,243,.25)");
+  [["#3f5f8a", "#274a78", "#5b7fb0", "#1e3a5f", "#3f5f8a"], ["#e9e3d3", "#cfc6b0", "#e9e3d3", "#bdb39a"], ["#7a2e2e", "#a94444", "#5a2020", "#a94444", "#7a2e2e"], ["#2f3d33", "#4a5d4e", "#2f3d33", "#1f2b22"]]
+    .forEach((st, i) => st.forEach((c, j) => { s += `<rect x="${90 + i * 195 + (j % 2) * 6}" y="${352 - (j + 1) * 34}" width="150" height="30" rx="7" fill="${c}" stroke="rgba(255,255,255,.2)"/>`; }));
+  s += '<rect x="40" y="352" width="820" height="14" rx="4" fill="#3a2f22"/><path d="M770 44 L720 0" stroke="#FFC107" stroke-width="3"/><circle cx="770" cy="92" r="48" fill="#FFC107"/><text x="770" y="101" text-anchor="middle" font-size="28" font-weight="800" fill="#000" font-family="sans-serif">NEW</text>';
+  return art("0 0 900 450", s);
+};
+const heroMinimal = () => { // slide 3: one clean piece on a calm backdrop
+  let s = bg("a3", "#14262b", "#0b1214", "rgba(255,255,255,.12)") + '<circle cx="700" cy="215" r="190" fill="#1d363c"/><path d="M60 330H330" stroke="#FFC107" stroke-width="3"/>';
+  return art("0 0 900 450", s + hang(640, 70, 3) + garment(640, 250, 3.2, "#e6e0d4", JKT));
+};
+const tileNew = () => art("0 0 400 260", bg("t1", "#1a1405", "#050505", "rgba(255,193,7,.3)") + hang(120, 58, 1.7) + garment(120, 140, 1.7, "#e9e3d3", TEE) +
+  '<rect x="250" y="112" width="104" height="72" rx="12" fill="#1e1e1e" stroke="#FFC107" stroke-width="3"/><rect x="274" y="100" width="34" height="14" rx="4" fill="#FFC107"/><circle cx="302" cy="148" r="25" fill="#0a0a0a" stroke="#FFC107" stroke-width="4"/><circle cx="302" cy="148" r="10" fill="#FFC107"/><path d="M340 70l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" fill="#FFC107"/>');
+const tileBasics = () => {
+  let s = bg("t2", "#0e1a26", "#050505", "rgba(255,255,255,.1)");
+  ["#3f5f8a", "#274a78", "#5b7fb0", "#274a78"].forEach((c, j) => { s += `<rect x="60" y="${196 - j * 32}" width="130" height="28" rx="6" fill="${c}" stroke="rgba(255,255,255,.2)"/>`; });
+  ["#e9e3d3", "#cfc6b0", "#e9e3d3"].forEach((c, j) => { s += `<rect x="215" y="${196 - j * 32}" width="130" height="28" rx="6" fill="${c}" stroke="rgba(255,255,255,.2)"/>`; });
+  return art("0 0 400 260", s + '<rect x="40" y="224" width="330" height="10" rx="3" fill="#3a2f22"/>' + hang(300, 46, 1.2) + garment(300, 100, 1.2, "#7a2e2e", TEE));
+};
+const tileBoda = () => art("0 0 400 260", bg("t3", "#101010", "#1b1405", "rgba(255,193,7,.25)") +
+  '<path d="M0 200V150h40v-30h30v50h40v-60h36v70h50v-40h34v60h44v-30h40v80H0z" fill="#181818"/><rect y="226" width="400" height="34" fill="#0a0a0a"/><path d="M0 243H400" stroke="#555" stroke-width="3" stroke-dasharray="18 14"/>' +
+  '<circle cx="120" cy="196" r="30" fill="none" stroke="#ddd" stroke-width="7"/><circle cx="280" cy="196" r="30" fill="none" stroke="#ddd" stroke-width="7"/>' +
+  '<path d="M120 196 L170 138 L238 138 L280 196 M170 138 L152 112 L186 106" fill="none" stroke="#ddd" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="176" y="126" width="56" height="11" rx="4" fill="#FFC107"/>' +
+  '<rect x="228" y="92" width="64" height="46" rx="5" fill="#FFC107" stroke="#b8860b" stroke-width="3"/><path d="M260 92v46" stroke="#b8860b" stroke-width="3"/>');
+
+/* ===================== HOME: hero carousel ===================== */
+const SLIDES = [
+  { art: heroRack,    img: "", title: "CLOSET: Kampala's Best Hand-Picked Thrift Deals!", text: "Quality-Checked Second Hand Clothes • Instant Bodaboda Delivery" },
+  { art: heroStacks,  img: "", title: "First Camera Selections!",     text: "New arrivals straight from Owino Market drops." },
+  { art: heroMinimal, img: "", title: "Everyday Wardrobe Basics!",    text: "Highly affordable pieces matching Think Twice rates." },
+];
+let slide = 0, slideTimer;
+function renderHero() {
+  $("track").innerHTML = SLIDES.map((s, i) => `
+    <div class="relative h-[24rem] min-w-full overflow-hidden md:h-[30rem]" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${SLIDES.length}">
+      ${s.img ? `<img src="${s.img}" alt="" class="absolute inset-0 h-full w-full object-cover">` : s.art()}
+      <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/10"></div>
+      <div class="relative flex h-full max-w-2xl flex-col justify-center px-14 md:px-24">
+        <h1 class="text-2xl font-extrabold leading-tight tracking-tight text-white sm:text-3xl md:text-5xl">${s.title}</h1>
+        <p class="mt-3 text-sm text-neutral-200 md:text-lg">${s.text}</p>
+        <a href="#fashion" class="mt-6 w-fit rounded-lg bg-white px-7 py-3 text-sm font-bold uppercase tracking-wider text-black transition hover:bg-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">Shop Now</a>
+      </div></div>`).join("");
+  $("dots").innerHTML = SLIDES.map((_, i) => `<button data-dot="${i}" aria-label="Go to slide ${i + 1}" class="h-2.5 w-2.5 rounded-full bg-white/40 transition-all"></button>`).join("");
+  goSlide(0); playSlides();
+}
+function goSlide(n) {
+  slide = (n + SLIDES.length) % SLIDES.length;
+  $("track").style.transform = `translateX(-${slide * 100}%)`;
+  [...$("track").children].forEach((el, i) => { el.inert = i !== slide; });
+  [...$("dots").children].forEach((d, i) => { d.classList.toggle("bg-white", i === slide); d.classList.toggle("w-6", i === slide); i === slide ? d.setAttribute("aria-current", "true") : d.removeAttribute("aria-current"); });
+}
+function playSlides() { clearInterval(slideTimer); if (!matchMedia("(prefers-reduced-motion: reduce)").matches) slideTimer = setInterval(() => goSlide(slide + 1), 5000); }
+$("prevBtn").onclick = () => { goSlide(slide - 1); playSlides(); };
+$("nextBtn").onclick = () => { goSlide(slide + 1); playSlides(); };
+$("dots").addEventListener("click", (e) => { const d = e.target.closest("[data-dot]"); if (d) { goSlide(Number(d.dataset.dot)); playSlides(); } });
+$("hero").addEventListener("pointerenter", () => clearInterval(slideTimer));
+$("hero").addEventListener("pointerleave", playSlides);
+let sx = 0;                                                       // swipe on phones
+$("hero").addEventListener("touchstart", (e) => { sx = e.touches[0].clientX; }, { passive: true });
+$("hero").addEventListener("touchend", (e) => { const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) { goSlide(slide + (dx < 0 ? 1 : -1)); playSlides(); } });
+
+/* ===================== HOME: image tiles ===================== */
 const promos = [
-  { tag: "First Camera Selections", title: "NEW ARRIVALS", text: "Fresh finds, photographed first and picked by us." },
-  { tag: "Wear them every day", title: "EVERYDAY WARDROBE BASICS", text: "Tees, jeans and shirts that go with everything." },
-  { tag: "Bodaboda to your door", title: "INSTANT KAMPALA DELIVERY • NO WAITING", text: "Pick your area at checkout and see your fare and arrival time." },
+  { art: tileNew,    img: "", tag: "First Camera Selections", title: "NEW ARRIVALS",              text: "Fresh finds, photographed first and picked by us." },
+  { art: tileBasics, img: "", tag: "Wear them every day",     title: "EVERYDAY WARDROBE BASICS", text: "Tees, jeans and shirts that go with everything." },
+  { art: tileBoda,   img: "", tag: "Fast across Kampala",     title: "BODABODA TO YOUR DOOR",     text: "Pick your area at checkout and see your fare and arrival time." },
 ];
 $("promos").innerHTML = promos.map((p) => `
-  <a href="#fashion" class="group flex min-h-40 flex-col justify-between rounded-2xl border border-neutral-800 bg-card p-5 transition duration-300 hover:-translate-y-1 hover:border-gold hover:shadow-xl md:min-h-48 md:p-6">
-    <div><span class="text-xs font-semibold uppercase tracking-widest text-gold">${p.tag}</span>
-      <h2 class="mt-2 text-lg font-bold leading-snug tracking-wide text-white md:text-xl">${p.title}</h2>
-      <p class="mt-2 text-sm text-neutral-400">${p.text}</p></div>
-    <span class="mt-4 text-sm font-medium text-white group-hover:text-gold">Shop now →</span>
-  </a>`).join("");
+  <a href="#fashion" class="group relative flex h-60 flex-col justify-end overflow-hidden rounded-2xl border border-neutral-800 bg-card p-5 transition duration-300 hover:-translate-y-1 hover:border-gold hover:shadow-xl md:h-72 md:p-6">
+    ${p.img ? `<img src="${p.img}" alt="" class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">` : `<div class="absolute inset-0 transition-transform duration-500 group-hover:scale-105">${p.art()}</div>`}
+    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent"></div>
+    <div class="relative">
+      <span class="text-xs font-semibold uppercase tracking-widest text-gold">${p.tag}</span>
+      <h2 class="mt-1 text-lg font-bold leading-snug tracking-wide text-white md:text-xl">${p.title}</h2>
+      <p class="mt-1 text-sm text-neutral-300">${p.text}</p>
+      <span class="mt-3 inline-block text-sm font-semibold text-white group-hover:text-gold">Shop now ➔</span>
+    </div></a>`).join("");
 
 /* ===================== CATALOG (every piece is unique: stock 1) =====================
    size = finished garment measurements in inches (bust = bust/chest, hips = hem/hips)
@@ -342,11 +467,11 @@ function drawMannequin() {
     <path d="M${c - h} 213 L${c - 1} 213 L${c - 5} 396 L${c - a} 396Z M${c + 1} 213 L${c + h} 213 L${c + a} 396 L${c + 5} 396Z"/>
     <ellipse cx="${c - (a + 5) / 2}" cy="402" rx="17" ry="6"/><ellipse cx="${c + (a + 5) / 2}" cy="402" rx="17" ry="6"/></g>${hair}`;
   const clip = [];
-  if (look.bottoms) { const d = bottomPath(look.bottoms); clip.push(d); s += `<path d="${d}" fill="${look.bottoms.fill}" stroke="rgba(255,255,255,.35)"/>`; }
-  if (look.tops) { const r = upperGarment(look.tops, 208, 2); clip.push(r.d); s += r.svg; }
+  if (look.bottoms) { const d = bottomPath(look.bottoms); clip.push(d); s += look.bottoms.photo ? photoLayer(look.bottoms) : `<path d="${d}" fill="${look.bottoms.fill}" stroke="rgba(255,255,255,.35)"/>`; }
+  if (look.tops) { const r = upperGarment(look.tops, 208, 2); clip.push(r.d); s += look.tops.photo ? photoLayer(look.tops) : r.svg; }
   if (look.outer) {                              // the jacket hangs open so the shirt underneath stays visible
-    const r = upperGarment(look.outer, 224, 7); clip.push(r.d); s += r.svg;
-    s += `<clipPath id="oc"><path d="${r.d}"/></clipPath><g clip-path="url(#oc)"><rect x="${c - 8}" y="92" width="16" height="140" fill="${look.tops ? look.tops.fill : "#1b1b1b"}"/></g>
+    const r = upperGarment(look.outer, 224, 7); clip.push(r.d); s += look.outer.photo ? photoLayer(look.outer) : r.svg;
+    if (!look.outer.photo) s += `<clipPath id="oc"><path d="${r.d}"/></clipPath><g clip-path="url(#oc)"><rect x="${c - 8}" y="92" width="16" height="140" fill="${look.tops ? look.tops.fill : "#1b1b1b"}"/></g>
           <path d="M${c - 8} 94 L${c - 8} 224 M${c + 8} 94 L${c + 8} 224" stroke="rgba(255,255,255,.4)" stroke-width="1"/>`;
   }
   if (clip.length) {                             // fit colours: bust/chest, waist and hip bands, clipped to the clothes
@@ -394,10 +519,10 @@ function renderProducts() {
     const f = itemOverall(p), on = look[p.slot] && look[p.slot].id === p.id;
     return `<article class="group flex flex-col overflow-hidden rounded-xl border bg-card transition duration-300 hover:-translate-y-1 hover:shadow-xl ${on ? "border-gold" : "border-neutral-800 hover:border-neutral-600"}">
       <div class="flex aspect-[4/5] items-center justify-center bg-black">
-        <svg viewBox="${SHAPES[p.shape].vb}" class="w-3/5 transition-transform duration-500 group-hover:scale-105" aria-hidden="true"><path d="${SHAPES[p.shape].d}" fill="${p.fill}" stroke="rgba(255,255,255,.35)"/></svg>
+        ${p.photo ? `<img src="${p.photo}" alt="${p.title}" class="h-[88%] w-[88%] object-contain transition-transform duration-500 group-hover:scale-105">` : `<svg viewBox="${SHAPES[p.shape].vb}" class="w-3/5 transition-transform duration-500 group-hover:scale-105" aria-hidden="true"><path d="${SHAPES[p.shape].d}" fill="${p.fill}" stroke="rgba(255,255,255,.35)"/></svg>`}
       </div>
       <div class="flex flex-1 flex-col gap-1 p-2.5 md:p-4">
-        <p class="text-[10px] font-medium uppercase tracking-wider text-neutral-500 md:text-xs">${p.tag}</p>
+        <p class="text-[10px] font-medium uppercase tracking-wider text-neutral-500 md:text-xs">${p.tag}${p.for === "f" ? " · WOMEN'S" : p.for === "m" ? " · MEN'S" : ""}</p>
         <h3 class="text-sm font-medium leading-snug text-white md:text-base">${p.title}</h3>
         <p class="text-base font-bold text-gold md:text-lg">${ugx(p.price)}</p>
         <p class="w-fit rounded bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold text-gold md:text-xs">Unique Piece - Only 1 Available</p>
@@ -415,6 +540,7 @@ async function tryOn(id, btn) {
   if (busy) return;
   busy = true;
   const p = products.find((x) => x.id === id);
+  if (p.for && p.for !== "u" && p.for !== gender) { gender = p.for; body = bodies[gender]; renderSliders(); }   // match the mannequin to the item
   document.querySelectorAll(".try-btn").forEach((b) => (b.disabled = true));
   btn.textContent = "Adding...";
   $("overlay").classList.remove("opacity-0");
@@ -477,8 +603,98 @@ $("searchForm").addEventListener("submit", (e) => { e.preventDefault(); runSearc
 $("q").addEventListener("input", (e) => { query = e.target.value; renderProducts(); });
 document.querySelectorAll("[data-q]").forEach((b) => b.onclick = () => runSearch(b.dataset.q));
 
+/* ===================== SECRET ADMIN PANEL =====================
+   NOTE: this key sits in the page source, so it only hides the panel from casual visitors.
+   It is NOT real security. Real protection needs a login on a backend. */
+const ADMIN_KEY = "admin123";
+const UPLOAD_KEY = "closet_uploads_v1";
+let uploads = [], clicks = [];
+
+$("logo").addEventListener("click", () => {                       // 5 quick clicks on the logo opens the key prompt
+  const now = Date.now();
+  clicks = clicks.filter((t) => now - t < 2500); clicks.push(now);
+  if (clicks.length >= 5) { clicks = []; $("keyInput").value = ""; $("keyErr").classList.add("hidden"); $("keyDialog").showModal(); $("keyInput").focus(); }
+});
+$("keyCancel").onclick = () => $("keyDialog").close();
+$("keyForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  if ($("keyInput").value === ADMIN_KEY) { $("keyDialog").close(); renderUploads(); $("adminDialog").showModal(); }
+  else { $("keyErr").classList.remove("hidden"); $("keyInput").select(); }
+});
+$("adminClose").onclick = () => $("adminDialog").close();
+
+// Make a clean PNG: shrink the photo, optionally knock out a plain background (flood fill from the edges)
+function loadImage(file) {
+  return new Promise((res, rej) => { const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(u); res(im); }; im.onerror = () => rej(new Error("Could not read that image.")); im.src = u; });
+}
+function stripBackground(ctx, w, h) {
+  const img = ctx.getImageData(0, 0, w, h), d = img.data, at = (x, y) => (y * w + x) * 4;
+  const cs = [at(0, 0), at(w - 1, 0), at(0, h - 1), at(w - 1, h - 1)], ref = [0, 1, 2].map((k) => cs.reduce((s, i) => s + d[i + k], 0) / 4);
+  const same = (i) => Math.abs(d[i] - ref[0]) + Math.abs(d[i + 1] - ref[1]) + Math.abs(d[i + 2] - ref[2]) < 90;
+  const seen = new Uint8Array(w * h), st = [];
+  const push = (x, y) => { const p = y * w + x; if (!seen[p] && same(p * 4)) { seen[p] = 1; st.push(p); } };
+  for (let x = 0; x < w; x++) { push(x, 0); push(x, h - 1); } for (let y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+  while (st.length) { const p = st.pop(), x = p % w, y = (p / w) | 0; d[p * 4 + 3] = 0; if (x > 0) push(x - 1, y); if (x < w - 1) push(x + 1, y); if (y > 0) push(x, y - 1); if (y < h - 1) push(x, y + 1); }
+  ctx.putImageData(img, 0, 0);
+}
+async function processPhoto(file, removeBg) {
+  const im = await loadImage(file), k = Math.min(1, 560 / Math.max(im.width, im.height)), w = Math.round(im.width * k), h = Math.round(im.height * k);
+  const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+  const ctx = cv.getContext("2d"); ctx.drawImage(im, 0, 0, w, h);
+  if (removeBg) stripBackground(ctx, w, h);
+  return cv.toDataURL("image/png");
+}
+
+// Uploaded pieces have no measured sizes, so they get a typical size M garment for the chosen mannequin
+const TYPICAL = { f: { bust: 37.5, waist: 30, hips: 40 }, m: { bust: 40, waist: 34, hips: 39 } };
+function makeItem({ title, price, gender, slot, cond, photo }) {
+  const t = TYPICAL[gender === "m" ? "m" : "f"], add = slot === "outer" ? 3 : 0;
+  return { id: Date.now(), tag: "UNIQUE PIECE", title, price, slot, shape: slot === "outer" ? "outer" : slot === "tops" ? "tops" : "trousers", fill: "#444", cond, for: gender, photo, upload: true,
+    size: slot === "bottoms" ? { waist: t.waist, hips: t.hips } : { bust: t.bust + add, waist: t.waist + add, hips: t.hips + add }, stretch: 0.03, sleeve: "long", cut: "regular", rise: 186 };
+}
+function photoLayer(it) {                                          // draws an uploaded photo on the mannequin
+  const c = CX, g = 1 + it.stretch;
+  if (it.slot === "bottoms") { const w = hw(it.size.hips * g) + 6; return `<image href="${it.photo}" x="${c - w}" y="182" width="${2 * w}" height="216" preserveAspectRatio="xMidYMid meet"/>`; }
+  const w = hw(it.size.bust * g) + (it.slot === "outer" ? 40 : 34);
+  return `<image href="${it.photo}" x="${c - w}" y="${it.slot === "outer" ? 88 : 90}" width="${2 * w}" height="${it.slot === "outer" ? 145 : 128}" preserveAspectRatio="xMidYMid meet"/>`;
+}
+function saveUploads() { try { localStorage.setItem(UPLOAD_KEY, JSON.stringify(uploads)); return true; } catch { return false; } }
+function loadUploads() { try { uploads = JSON.parse(localStorage.getItem(UPLOAD_KEY) || "[]"); } catch { uploads = []; } products.unshift(...uploads); }
+function renderUploads() {
+  $("uploadList").innerHTML = uploads.length ? uploads.map((u) => `<li class="flex items-center gap-3 rounded-lg bg-black p-2"><img src="${u.photo}" alt="" class="h-12 w-12 rounded bg-neutral-900 object-contain">
+    <span class="min-w-0 flex-1"><b class="block truncate text-white">${u.title}</b><span class="text-xs text-neutral-500">${ugx(u.price)} · ${u.slot} · ${u.cond}</span></span>
+    <button data-del="${u.id}" class="rounded px-3 py-2 text-xs text-red-300 hover:bg-neutral-800">Delete</button></li>`).join("") : '<li class="text-neutral-500">Nothing uploaded yet.</li>';
+}
+$("aFile").onchange = (e) => { const f = e.target.files[0], im = $("aPreview"); if (f) { im.src = URL.createObjectURL(f); im.classList.remove("hidden"); } else im.classList.add("hidden"); };
+$("adminForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const f = $("aFile").files[0], price = Number($("aPrice").value), title = $("aTitle").value.trim();
+  $("aErr").classList.add("hidden");
+  if (!f || !title || !(price > 0)) return;
+  $("aSubmit").disabled = true; $("aSubmit").textContent = "Processing…";
+  try {
+    const photo = await processPhoto(f, $("aRm").checked);
+    const item = makeItem({ title, price, gender: $("aGender").value, slot: $("aSlot").value, cond: $("aCond").value, photo });
+    uploads.push(item); products.unshift(item);
+    if (!saveUploads()) toast("Added for this visit only (browser storage is full)");
+    else toast(`${title} added to the catalog`);
+    e.target.reset(); $("aPreview").classList.add("hidden");
+    renderUploads(); renderAll();
+  } catch (err) { $("aErr").textContent = err.message || "Something went wrong."; $("aErr").classList.remove("hidden"); }
+  $("aSubmit").disabled = false; $("aSubmit").textContent = "Add to catalog";
+});
+$("uploadList").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-del]"); if (!b) return;
+  const id = Number(b.dataset.del);
+  uploads = uploads.filter((u) => u.id !== id);
+  const i = products.findIndex((p) => p.id === id); if (i > -1) products.splice(i, 1);
+  for (const s of SLOT_ORDER) if (look[s] && look[s].id === id) look[s] = null;
+  saveUploads(); renderUploads(); renderAll();
+});
+
 /* ===================== START ===================== */
-renderSliders(); renderAll(); setMobileTab("room"); showView(location.hash.slice(1));
+loadUploads(); renderHero(); renderSliders(); renderAll(); setMobileTab("room"); showView(location.hash.slice(1));
 </script>
 </body>
 </html>
