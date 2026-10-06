@@ -9,42 +9,45 @@
 <style>
   @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
   .shimmer-bar { animation: shimmer 1.3s linear infinite; }
-  input[type=range] { accent-color: #FFC107; width: 100%; height: 28px; }
+  input[type=range] { accent-color: #FFC107; width: 100%; height: 32px; }
   .tab[aria-current="page"] { color: #fff; border-color: #FFC107; }
   .seg[aria-pressed="true"], .seg[aria-checked="true"] { background: #FFC107; color: #000; font-weight: 700; }
   select { color-scheme: dark; }
+  /* Large rounded cards, two per row on desktop (matches reference) */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  .card { width: 100%; }
+  @media (max-width: 639px) { .cards { grid-template-columns: 1fr; gap: 16px; } }
   @media (prefers-reduced-motion: reduce) { .shimmer-bar { animation: none; } }
 </style>
 </head>
 <body class="bg-black font-sans text-neutral-200 antialiased">
 
-<!-- Fabric patterns (outside hidden views so every SVG can use them) -->
 <svg width="0" height="0" class="absolute" aria-hidden="true"><defs>
   <pattern id="p-stripes" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="14" height="14" fill="#1f6f5c"/><rect width="5" height="14" fill="#f2c14e"/></pattern>
   <pattern id="p-check" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#7a2e2e"/><path d="M0 0H8V8H0ZM8 8H16V16H8Z" fill="#a94444"/></pattern>
 </defs></svg>
 
-<!-- ================= GLOBAL HEADER (Jumia-style, dark) ================= -->
+<!-- ================= GLOBAL HEADER ================= -->
 <header class="border-b border-neutral-800 bg-black/95 backdrop-blur md:sticky md:top-0 md:z-40">
   <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-2 gap-y-2 px-3 pt-3 md:gap-x-4 md:px-8">
     <div class="flex items-center gap-1 md:gap-2">
-      <button id="menuBtn" aria-label="Menu" aria-expanded="false" class="rounded-lg p-2.5 text-neutral-300 hover:bg-card hover:text-white">
+      <button id="menuBtn" aria-label="Menu" aria-expanded="false" class="rounded p-2.5 text-neutral-300 hover:bg-card hover:text-white">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <a id="logo" href="#home" class="select-none text-xl font-extrabold tracking-[0.25em] text-white md:text-2xl md:tracking-[0.3em]">CLOSET</a>
     </div>
 
-    <!-- Search: gold SEARCH button inside the far right of the bar -->
-    <form id="searchForm" class="order-last flex w-full items-center rounded-full border border-neutral-700 bg-card pl-4 pr-1 focus-within:border-gold md:order-none md:mx-auto md:w-auto md:max-w-2xl md:flex-1">
-      <input id="q" type="search" placeholder="Search products, brands and categories" aria-label="Search" class="min-w-0 flex-1 bg-transparent py-3 text-sm text-white outline-none placeholder:text-neutral-500">
-      <button type="submit" class="my-1 flex shrink-0 items-center gap-1.5 rounded-full bg-gold px-4 py-2 text-xs font-extrabold tracking-wider text-black hover:bg-yellow-300">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>SEARCH
+    <!-- Search: flat border, gold button attached to the right edge -->
+    <form id="searchForm" class="order-last flex w-full overflow-hidden rounded-full border border-neutral-700 bg-card focus-within:border-gold md:order-none md:mx-auto md:w-auto md:max-w-2xl md:flex-1">
+      <input id="q" type="search" placeholder="Search products, brands and categories" aria-label="Search" class="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-white outline-none placeholder:text-neutral-500">
+      <button type="submit" class="flex shrink-0 items-center gap-1.5 bg-gold px-4 text-sm font-extrabold tracking-wider text-black hover:bg-yellow-300 md:px-6">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>SEARCH
       </button>
     </form>
 
     <div class="ml-auto flex items-center text-sm md:ml-0">
       <details class="relative">
-        <summary class="flex cursor-pointer list-none items-center gap-1.5 rounded-lg p-2.5 text-neutral-300 hover:bg-card hover:text-white" aria-label="Account">
+        <summary class="flex cursor-pointer list-none items-center gap-1.5 rounded p-2.5 text-neutral-300 hover:bg-card hover:text-white" aria-label="Account">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg><span class="hidden md:inline">Account</span></summary>
         <div class="absolute right-0 z-50 mt-2 w-44 rounded-lg border border-neutral-800 bg-card p-1 shadow-xl">
           <button class="block w-full rounded px-3 py-2.5 text-left hover:bg-neutral-800">Sign in</button>
@@ -52,15 +55,30 @@
           <button class="block w-full rounded px-3 py-2.5 text-left hover:bg-neutral-800">My orders</button>
         </div>
       </details>
-      <a id="helpLink" target="_blank" rel="noopener" aria-label="Help" class="flex items-center gap-1.5 rounded-lg p-2.5 text-neutral-300 hover:bg-card hover:text-white">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg><span class="hidden md:inline">Help</span></a>
-      <button id="cartBtn" aria-label="Cart" class="flex items-center gap-1.5 rounded-lg p-2.5 text-neutral-300 hover:bg-card hover:text-white">
+
+      <!-- Help: opens on click (phones) or hover (desktop) -->
+      <div id="helpWrap" class="relative">
+        <button id="helpBtn" aria-haspopup="true" aria-expanded="false" aria-label="Help" class="flex items-center gap-1.5 rounded p-2.5 text-neutral-300 hover:bg-card hover:text-white">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg><span class="hidden md:inline">Help</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="hidden md:block"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="helpMenu" class="absolute right-0 z-50 mt-1 hidden w-64 rounded-lg border border-neutral-800 bg-card p-2 shadow-2xl">
+          <button data-help="center" class="block w-full rounded px-3 py-2.5 text-left text-sm hover:bg-neutral-800">Help Center</button>
+          <button data-help="order" class="block w-full rounded px-3 py-2.5 text-left text-sm hover:bg-neutral-800">Place an Order</button>
+          <button data-help="pay" class="block w-full rounded px-3 py-2.5 text-left text-sm hover:bg-neutral-800">Payments Options</button>
+          <button data-help="delivery" class="block w-full rounded px-3 py-2.5 text-left text-sm hover:bg-neutral-800">Delivery Timelines</button>
+          <a id="helpWaLink" target="_blank" rel="noopener" class="mt-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] py-3 text-sm font-bold text-white hover:bg-[#1ebe5b]">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 1 1-4.2 14.8l-.3-.2-2.4.6.7-2.3-.2-.3A8 8 0 0 1 12 4z"/><path d="M8.7 7.6c-.3 0-.6.2-.8.6-.4.8-.1 1.9.8 3.1 1 1.4 2.4 2.5 3.8 3 .9.3 1.7.2 2.2-.3.2-.2.4-.6.3-.9l-.1-.3-1.6-.8c-.3-.1-.5 0-.7.2l-.4.5c-.4-.1-1.3-.7-1.9-1.4-.4-.5-.7-1-.8-1.4l.4-.4c.2-.2.2-.4.1-.7L9.3 7.8c-.1-.2-.3-.2-.6-.2z"/></svg>
+            Chat on WhatsApp</a>
+        </div>
+      </div>
+
+      <button id="cartBtn" aria-label="Cart" class="flex items-center gap-1.5 rounded p-2.5 text-neutral-300 hover:bg-card hover:text-white">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.5L22 7H6"/></svg>
         <span class="hidden md:inline">Cart</span>
         <span id="cartCount" class="min-w-5 rounded-full bg-gold px-1.5 text-center text-xs font-bold text-black">0</span></button>
     </div>
 
-    <!-- Persistent view tabs -->
     <nav class="flex w-full gap-8 text-sm font-semibold" aria-label="Main">
       <a href="#home" data-tab="home" class="tab border-b-2 border-transparent py-2.5 text-neutral-400 hover:text-white">Home</a>
       <a href="#fashion" data-tab="fashion" class="tab border-b-2 border-transparent py-2.5 text-neutral-400 hover:text-white">Fashion</a>
@@ -74,80 +92,85 @@
 
 <main class="mx-auto max-w-7xl px-3 py-4 md:px-8 md:py-6">
 
-<!-- ================= PAGE 1: HOME ================= -->
+<!-- ================= VIEW 1: HOME ================= -->
 <section id="view-home" class="hidden">
-  <!-- Jumia-style auto-sliding hero carousel -->
   <div id="hero" class="relative overflow-hidden rounded-3xl border border-neutral-800 bg-card" role="group" aria-roledescription="carousel" aria-label="Featured offers">
-    <div id="track" class="flex transition-transform duration-700 ease-out"></div>
-    <button id="prevBtn" aria-label="Previous slide" class="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white ring-1 ring-white/20 hover:bg-black md:left-4 md:p-3">
+    <div id="track" class="flex transition-transform duration-700 ease-in-out"></div>
+    <button id="prevBtn" aria-label="Previous slide" class="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white ring-1 ring-white/20 hover:bg-black md:left-4 md:p-3">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
-    <button id="nextBtn" aria-label="Next slide" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white ring-1 ring-white/20 hover:bg-black md:right-4 md:p-3">
+    <button id="nextBtn" aria-label="Next slide" class="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white ring-1 ring-white/20 hover:bg-black md:right-4 md:p-3">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
-    <div id="dots" class="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2"></div>
+    <div id="dots" class="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2"></div>
   </div>
   <div id="promos" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 md:mt-8 md:gap-6"></div>
 </section>
 
-
-<!-- ================= PAGE 2: FASHION + TRY-ON ================= -->
+<!-- ================= VIEW 2: FASHION + TRY-ON ROOM ================= -->
 <section id="view-fashion" class="hidden">
+  <div class="md:grid md:grid-cols-12 md:items-start md:gap-8">
 
-  <!-- Phones: switch between the fitting room and the catalog -->
-  <div class="sticky top-0 z-30 -mx-3 mb-3 grid grid-cols-2 gap-2 bg-black px-3 py-2 md:hidden">
-    <button id="segRoom" class="seg rounded-lg border border-neutral-700 py-3 text-sm font-semibold">Fitting Room</button>
-    <button id="segBrowse" class="seg rounded-lg border border-neutral-700 py-3 text-sm font-semibold">Browse Items</button>
-  </div>
+    <!-- On phones this wrapper "disappears" (display: contents) so the mannequin can stay stuck to the top while everything below scrolls. -->
+    <div class="contents md:sticky md:top-32 md:col-span-4 md:block md:max-h-[calc(100dvh-9rem)] md:overflow-y-auto md:rounded-3xl md:border md:border-neutral-800 md:bg-card md:p-2">
 
-  <div class="grid grid-cols-1 gap-4 md:grid-cols-12 md:gap-8">
-
-    <!-- LEFT: mannequin + sizing -->
-    <aside id="room" class="hidden rounded-2xl border border-neutral-800 bg-card p-3 md:sticky md:top-32 md:col-span-4 md:block md:max-h-[calc(100dvh-9rem)] md:overflow-y-auto md:p-4">
-      <div class="grid grid-cols-2 gap-1 rounded-xl bg-black p-1 ring-1 ring-neutral-800" role="radiogroup" aria-label="Mannequin gender">
-        <button class="seg rounded-lg py-2.5 text-sm" role="radio" data-g="f">Female</button>
-        <button class="seg rounded-lg py-2.5 text-sm" role="radio" data-g="m">Male</button>
-      </div>
-
-      <div class="relative mx-auto mt-3 aspect-[3/4] max-h-[58dvh] overflow-hidden rounded-xl bg-black md:max-h-[42dvh]">
-        <svg id="mSvg" viewBox="0 0 300 420" class="h-full w-full" role="img" aria-label="Mannequin showing garment fit"></svg>
-        <div id="overlay" class="pointer-events-none absolute inset-0 overflow-hidden bg-black/50 opacity-0 backdrop-blur-sm transition-opacity duration-200" role="status">
-          <div class="shimmer-bar absolute inset-y-0 w-2/3 bg-gradient-to-r from-transparent via-white/25 to-transparent"></div>
-          <p class="absolute bottom-3 left-2 right-2 text-center text-sm font-medium text-white">Adding layer…</p>
+      <!-- Mannequin preview: sticky, about 46% of the screen height -->
+      <div id="stage" class="sticky top-0 z-30 -mx-3 border-b border-neutral-800 bg-black px-3 pt-2 md:static md:mx-0 md:border-0 md:bg-transparent md:p-3 md:pb-0">
+        <div class="grid grid-cols-2 gap-1 rounded-2xl border border-neutral-800 bg-black p-1.5" role="radiogroup" aria-label="Mannequin gender">
+          <button class="seg rounded-xl py-3 text-sm" role="radio" data-g="f">Female</button>
+          <button class="seg rounded-xl py-3 text-sm" role="radio" data-g="m">Male</button>
         </div>
-      </div>
-
-      <div class="mt-3 grid grid-cols-2 gap-2 text-center">
-        <div class="rounded-lg bg-black p-2"><p class="text-[10px] uppercase tracking-wider text-neutral-500">Size</p><p class="text-xl font-bold text-gold"><span id="outLetter"></span> <span id="outUS" class="text-xs font-medium text-neutral-400"></span></p></div>
-        <div class="rounded-lg bg-black p-2"><p class="text-[10px] uppercase tracking-wider text-neutral-500">Profile</p><p id="outProfile" class="text-sm font-semibold leading-tight text-white"></p></div>
-      </div>
-
-      <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-400">
-        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-green-500"></i>Loose</span>
-        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-yellow-400"></i>True to size</span>
-        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-red-500"></i>Tight</span>
-      </div>
-      <div id="fitList" class="mt-2 space-y-2 text-xs"></div>
-
-      <div class="mt-4 border-t border-neutral-800 pt-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-white">Your measurements</h2>
-          <div class="flex overflow-hidden rounded-lg border border-neutral-700 text-xs" role="group" aria-label="Units">
-            <button id="uIn" class="seg px-3 py-2">Inches</button>
-            <button id="uCm" class="seg px-3 py-2">Metric</button>
+        <div class="relative mx-auto mt-3 h-[40dvh] overflow-hidden rounded-2xl bg-black md:h-[44dvh]">
+          <svg id="mSvg" viewBox="0 0 300 420" class="h-full w-full" role="img" aria-label="Mannequin showing garment fit"></svg>
+          <div id="overlay" class="pointer-events-none absolute inset-0 overflow-hidden rounded-xl bg-black/50 opacity-0 backdrop-blur-sm transition-opacity duration-200" role="status">
+            <div class="shimmer-bar absolute inset-y-0 w-2/3 bg-gradient-to-r from-transparent via-white/25 to-transparent"></div>
+            <p class="absolute bottom-12 left-2 right-2 text-center text-sm font-medium text-white">Adding layer…</p>
           </div>
         </div>
-        <div id="sliders" class="mt-3 space-y-3 text-sm"></div>
       </div>
 
-      <div class="sticky bottom-0 -mx-3 mt-4 grid grid-cols-2 gap-2 bg-card px-3 pb-1 pt-2 md:-mx-4 md:px-4">
-        <button id="resetBtn" class="rounded-lg border border-neutral-600 py-3 text-sm font-semibold uppercase tracking-wider text-white hover:bg-neutral-800">Start Over</button>
-        <button id="buyBtn" disabled class="rounded-lg bg-gold py-3 text-sm font-bold uppercase tracking-wider text-black hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40">Buy Outfit</button>
-      </div>
-    </aside>
+      <!-- Control dashboard: scrolls under the mannequin -->
+      <div id="dash" class="space-y-4 py-4 md:p-4">
+        <div class="grid grid-cols-2 gap-2 text-center">
+          <div class="rounded-2xl border border-neutral-800 bg-black p-3"><p class="text-[10px] uppercase tracking-wider text-neutral-500">Size</p><p class="text-xl font-bold text-gold"><span id="outLetter"></span> <span id="outUS" class="text-xs font-medium text-neutral-400"></span></p></div>
+          <div class="rounded-2xl border border-neutral-800 bg-black p-3"><p class="text-[10px] uppercase tracking-wider text-neutral-500">Profile</p><p id="outProfile" class="text-sm font-semibold leading-tight text-white"></p></div>
+        </div>
 
-    <!-- RIGHT: catalog -->
-    <div id="browse" class="min-w-0 md:col-span-8 md:block">
-      <h1 class="mb-3 text-xl font-bold text-white md:mb-6 md:text-2xl">Hand-Picked Thrift</h1>
-      <div id="grid" class="grid grid-cols-2 gap-2.5 md:gap-5 xl:grid-cols-3"></div>
+        <div>
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-white">Your measurements</h2>
+            <div class="flex overflow-hidden rounded-lg border border-neutral-700 text-xs" role="group" aria-label="Units">
+              <button id="uIn" class="seg px-3 py-2">Inches</button>
+              <button id="uCm" class="seg px-3 py-2">Metric</button>
+            </div>
+          </div>
+          <div id="sliders" class="mt-3 space-y-3 text-sm"></div>
+        </div>
+
+        <div>
+          <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-400">
+            <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-green-500"></i>Loose</span>
+            <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-yellow-400"></i>True to size</span>
+            <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-red-500"></i>Tight</span>
+          </div>
+          <div id="fitList" class="mt-2 space-y-2 text-xs"></div>
+        </div>
+
+        <div>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="resetBtn" class="rounded-xl border border-neutral-600 py-3 text-sm font-semibold uppercase tracking-wider text-white hover:bg-neutral-800">Start Over</button>
+            <button id="buyBtn" disabled class="rounded-xl bg-gold py-3 text-sm font-bold uppercase tracking-wider text-black hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40">Buy Outfit</button>
+          </div>
+          <p class="mt-3 rounded-lg bg-black px-3 py-2 text-center text-[11px] leading-relaxed text-neutral-300">🚀 Delivery within Kampala &amp; Entebbe via SafeBoda | Cash on Delivery &amp; Mobile Money (MTN/Airtel) Accepted</p>
+          <a id="waOutfit" href="#" target="_blank" rel="noopener" class="mt-2 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] py-3 text-sm font-bold text-white hover:bg-[#1ebe5b]">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 1 1-4.2 14.8l-.3-.2-2.4.6.7-2.3-.2-.3A8 8 0 0 1 12 4z"/><path d="M8.7 7.6c-.3 0-.6.2-.8.6-.4.8-.1 1.9.8 3.1 1 1.4 2.4 2.5 3.8 3 .9.3 1.7.2 2.2-.3.2-.2.4-.6.3-.9l-.1-.3-1.6-.8c-.3-.1-.5 0-.7.2l-.4.5c-.4-.1-1.3-.7-1.9-1.4-.4-.5-.7-1-.8-1.4l.4-.4c.2-.2.2-.4.1-.7L9.3 7.8c-.1-.2-.3-.2-.6-.2z"/></svg>
+            Order via WhatsApp</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Catalog -->
+    <div id="browse" class="min-w-0 pt-2 md:col-span-8 md:pt-0">
+      <h1 class="mb-4 text-2xl font-bold text-white md:mb-6 md:text-3xl">Hand-Picked Thrift</h1>
+      <div id="grid" class="cards"></div>
       <p id="empty" class="hidden py-10 text-center text-neutral-500">No items match your search.</p>
     </div>
   </div>
@@ -158,26 +181,35 @@
 
 <div id="toast" class="pointer-events-none fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black opacity-0 shadow-xl transition-opacity duration-300" role="status"></div>
 
-<!-- ================= CHECKOUT ================= -->
+<!-- ================= CART / CHECKOUT ================= -->
 <dialog id="orderDialog" class="w-[min(94vw,28rem)] rounded-2xl border border-neutral-800 bg-card p-0 text-neutral-200 shadow-2xl backdrop:bg-black/80">
   <div class="max-h-[88dvh] overflow-y-auto p-5">
-    <h2 class="text-lg font-semibold text-white">Your outfit</h2>
+    <h2 class="text-lg font-semibold text-white">Your cart</h2>
     <ul id="orderItems" class="mt-3 divide-y divide-neutral-800 text-sm"></ul>
     <p id="orderWarn" class="mt-3 hidden rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300 ring-1 ring-red-500/30"></p>
-
     <div id="deliveryBox" class="mt-4">
-      <label for="areaSel" class="text-sm font-semibold text-white">Bodaboda delivery area</label>
+      <label for="areaSel" class="text-sm font-semibold text-white">Delivery area (SafeBoda)</label>
       <select id="areaSel" class="mt-1.5 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-sm text-white"></select>
       <p id="deliveryInfo" class="mt-2 text-sm text-neutral-300"></p>
     </div>
-
     <div id="totals" class="mt-4 space-y-1 border-t border-neutral-800 pt-3 text-sm">
       <p class="flex justify-between text-neutral-400"><span>Items</span><span id="tItems"></span></p>
       <p class="flex justify-between text-neutral-400"><span>Delivery</span><span id="tDelivery"></span></p>
       <p class="flex justify-between text-base font-bold text-white"><span>Total</span><span id="tTotal"></span></p>
+      <p class="pt-2 text-xs text-neutral-500">Pay by Cash on Delivery or Mobile Money (MTN/Airtel).</p>
     </div>
-    <a id="whatsappLink" target="_blank" rel="noopener" class="mt-4 block rounded-lg bg-gold py-3 text-center text-sm font-bold text-black hover:bg-yellow-300">Order on WhatsApp</a>
+    <a id="whatsappLink" target="_blank" rel="noopener" class="mt-4 flex items-center justify-center gap-2 rounded-lg bg-[#25D366] py-3 text-center text-sm font-bold text-white hover:bg-[#1ebe5b]">Order via WhatsApp</a>
     <button id="closeDialog" class="mt-2 w-full rounded-lg border border-neutral-700 py-3 text-sm font-medium hover:bg-neutral-800">Keep browsing</button>
+  </div>
+</dialog>
+
+<!-- ================= HELP ================= -->
+<dialog id="helpDialog" class="w-[min(94vw,28rem)] rounded-2xl border border-neutral-800 bg-card p-0 text-neutral-200 shadow-2xl backdrop:bg-black/80">
+  <div class="max-h-[88dvh] overflow-y-auto p-5">
+    <h2 id="helpTitle" class="text-lg font-semibold text-white"></h2>
+    <div id="helpBody" class="mt-3 space-y-2 text-sm text-neutral-300"></div>
+    <a id="helpWa2" target="_blank" rel="noopener" class="mt-4 flex items-center justify-center rounded-lg bg-[#25D366] py-3 text-sm font-bold text-white hover:bg-[#1ebe5b]">Chat on WhatsApp</a>
+    <button id="helpClose" class="mt-2 w-full rounded-lg border border-neutral-700 py-3 text-sm font-medium hover:bg-neutral-800">Close</button>
   </div>
 </dialog>
 
@@ -232,8 +264,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ugx = (n) => "UGX " + n.toLocaleString("en-UG");
 const WHATSAPP_NUMBER = "256700000000"; // placeholder: country code, no + or spaces
 
-/* ===================== NAVIGATION ===================== */
-let mobileTab = "room";
+/* ===================== NAVIGATION (instant view swapping, no reloads) ===================== */
 function showView(name) {
   name = name === "fashion" ? "fashion" : "home";
   $("view-home").classList.toggle("hidden", name !== "home");
@@ -242,22 +273,33 @@ function showView(name) {
   $("drawer").classList.add("hidden"); $("menuBtn").setAttribute("aria-expanded", "false");
   window.scrollTo(0, 0);
 }
-// Phones show one panel at a time; tablets and desktops show both side by side
-function setMobileTab(t) {
-  mobileTab = t;
-  $("room").classList.toggle("hidden", t !== "room");
-  $("browse").classList.toggle("hidden", t !== "browse");
-  $("segRoom").setAttribute("aria-pressed", t === "room"); $("segBrowse").setAttribute("aria-pressed", t === "browse");
-  window.scrollTo(0, 0);
-}
 let toastTimer;
 function toast(msg) { $("toast").textContent = msg; $("toast").classList.remove("opacity-0"); clearTimeout(toastTimer); toastTimer = setTimeout(() => $("toast").classList.add("opacity-0"), 2200); }
-
 addEventListener("hashchange", () => showView(location.hash.slice(1)));
 $("menuBtn").onclick = (e) => { const open = $("drawer").classList.toggle("hidden") === false; e.currentTarget.setAttribute("aria-expanded", open); };
-$("segRoom").onclick = () => setMobileTab("room");
-$("segBrowse").onclick = () => setMobileTab("browse");
-$("helpLink").href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello CLOSET, I need help")}`;
+
+/* ===================== HELP MENU (click or hover) ===================== */
+const HELP = {
+  center:   ["Help Center", ["Every piece on CLOSET is hand-picked, quality-checked, owned and delivered by us.", "Each card shows the item's condition and its measurements so you can check the fit before you buy.", "Stuck? Tap the green button to chat with us on WhatsApp."]],
+  order:    ["Place an Order", ["1. Browse the Fashion page and tap Try On to see a piece on the mannequin.", "2. Enter your measurements so the colours show how it fits.", "3. Tap Add to Cart, or Buy Outfit for everything on the mannequin.", "4. Pick your delivery area and tap Order via WhatsApp."]],
+  pay:      ["Payments Options", ["Cash on Delivery: pay the rider when your parcel arrives.", "Mobile Money: MTN or Airtel Money, confirmed with us on WhatsApp."]],
+  delivery: ["Delivery Timelines", ["We deliver within Kampala and Entebbe via SafeBoda.", "Choose your area at checkout to see the delivery fare and an estimated arrival time. Most orders arrive within a few hours."]],
+};
+const helpWa = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello CLOSET, I need help")}`;
+$("helpWaLink").href = helpWa; $("helpWa2").href = helpWa;
+let helpTimer;
+const setHelp = (open) => { $("helpMenu").classList.toggle("hidden", !open); $("helpBtn").setAttribute("aria-expanded", open); };
+$("helpBtn").onclick = (e) => { e.stopPropagation(); setHelp(matchMedia("(hover: hover)").matches ? true : $("helpMenu").classList.contains("hidden")); };
+$("helpWrap").addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") { clearTimeout(helpTimer); setHelp(true); } });
+$("helpWrap").addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") helpTimer = setTimeout(() => setHelp(false), 250); });
+document.addEventListener("click", (e) => { if (!$("helpWrap").contains(e.target)) setHelp(false); });
+$("helpMenu").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-help]"); if (!b) return;
+  const [title, lines] = HELP[b.dataset.help];
+  $("helpTitle").textContent = title; $("helpBody").innerHTML = lines.map((l) => `<p>${l}</p>`).join("");
+  setHelp(false); $("helpDialog").showModal();
+});
+$("helpClose").onclick = () => $("helpDialog").close();
 
 /* ===================== ILLUSTRATED PLACEHOLDER ART =====================
    Replace any of these with a real photo: set img: "images/your-photo.jpg" on the slide or tile. */
@@ -265,27 +307,27 @@ const TEE = "M-40 -30 L-18 -40 Q0 -28 18 -40 L40 -30 L52 -2 L34 6 L30 -6 L30 52 
 const JKT = "M-44 -34 L-18 -44 L0 -30 L18 -44 L44 -34 L58 40 L40 46 L34 0 L34 60 L-34 60 L-34 0 L-40 46 L-58 40Z";
 const garment = (x, y, s, col, p) => `<path transform="translate(${x} ${y}) scale(${s})" d="${p}" fill="${col}" stroke="rgba(255,255,255,.3)" stroke-width="${1.5 / s}"/>`;
 const hang = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})" fill="none" stroke="#c9c9c9" stroke-width="2"><path d="M0 0v-9q0-10 10-10"/><path d="M-32 14 0 0 32 14Z"/></g>`;
-const art = (vb, inner) => `<svg class="absolute inset-0 h-full w-full" viewBox="${vb}" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${inner}</svg>`;
+const art = (vb, inner, align = "xMid") => `<svg class="absolute inset-0 h-full w-full" viewBox="${vb}" preserveAspectRatio="${align}YMid slice" aria-hidden="true">${inner}</svg>`;
 const bg = (id, a, b, glow) => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>
   <radialGradient id="${id}g" cx=".8" cy=".1" r=".7"><stop offset="0" stop-color="${glow}"/><stop offset="1" stop-color="rgba(0,0,0,0)"/></radialGradient></defs>
   <rect width="100%" height="100%" fill="url(#${id})"/><rect width="100%" height="100%" fill="url(#${id}g)"/>`;
 
-const heroRack = () => { // slide 1: a dark rail of hanging thrift pieces
-  let s = bg("a1", "#050505", "#1c1505", "rgba(255,193,7,.35)") + '<path d="M0 120H900" stroke="#777" stroke-width="5"/>';
-  ["#8a6a3a", "#3f5f8a", "#e9e3d3", "#7a2e2e", "#2f3d33", "#a33b4c", "#5b7fb0"].forEach((c, i) => { const x = 70 + i * 125; s += hang(x, 120, 1.5) + garment(x, 214, 1.5, c, i % 3 === 1 ? JKT : TEE); });
-  return art("0 0 900 450", s + '<rect y="400" width="900" height="50" fill="rgba(255,255,255,.05)"/>');
+const heroRack = () => { // slide 1: a rail of hanging thrift pieces, kept to the right so the text side stays clean
+  let s = bg("a1", "#050505", "#1c1505", "rgba(255,193,7,.35)") + '<path d="M430 120H900" stroke="#777" stroke-width="5"/>';
+  ["#8a6a3a", "#3f5f8a", "#e9e3d3", "#a33b4c"].forEach((c, i) => { const x = 500 + i * 110; s += hang(x, 120, 1.4) + garment(x, 207, 1.4, c, i % 2 ? JKT : TEE); });
+  return art("0 0 900 450", s, "xMax");
 };
-const heroStacks = () => { // slide 2: folded piles from a market drop
-  let s = bg("a2", "#0d1a24", "#050505", "rgba(33,150,243,.25)");
-  [["#3f5f8a", "#274a78", "#5b7fb0", "#1e3a5f", "#3f5f8a"], ["#e9e3d3", "#cfc6b0", "#e9e3d3", "#bdb39a"], ["#7a2e2e", "#a94444", "#5a2020", "#a94444", "#7a2e2e"], ["#2f3d33", "#4a5d4e", "#2f3d33", "#1f2b22"]]
-    .forEach((st, i) => st.forEach((c, j) => { s += `<rect x="${90 + i * 195 + (j % 2) * 6}" y="${352 - (j + 1) * 34}" width="150" height="30" rx="7" fill="${c}" stroke="rgba(255,255,255,.2)"/>`; }));
-  s += '<rect x="40" y="352" width="820" height="14" rx="4" fill="#3a2f22"/><path d="M770 44 L720 0" stroke="#FFC107" stroke-width="3"/><circle cx="770" cy="92" r="48" fill="#FFC107"/><text x="770" y="101" text-anchor="middle" font-size="28" font-weight="800" fill="#000" font-family="sans-serif">NEW</text>';
-  return art("0 0 900 450", s);
+const heroCamera = () => { // slide 2: "first camera" selections (no boxes, just a camera and sparkles)
+  let s = bg("a2", "#0d1a24", "#050505", "rgba(255,193,7,.2)") + '<circle cx="690" cy="225" r="170" fill="rgba(255,193,7,.08)"/>';
+  s += '<g transform="translate(690 225) scale(1.9)"><rect x="-78" y="-46" width="156" height="104" rx="16" fill="#1e1e1e" stroke="#FFC107" stroke-width="4"/><rect x="-36" y="-64" width="46" height="20" rx="6" fill="#FFC107"/><circle cx="0" cy="6" r="36" fill="#0a0a0a" stroke="#FFC107" stroke-width="5"/><circle cx="0" cy="6" r="15" fill="#FFC107"/><circle cx="56" cy="-26" r="6" fill="#FFC107"/></g>';
+  s += '<path d="M830 90l7 17 17 7-17 7-7 17-7-17-17-7 17-7zM540 330l5 12 12 5-12 5-5 12-5-12-12-5 12-5z" fill="#FFC107"/>';
+  return art("0 0 900 450", s, "xMax");
 };
 const heroMinimal = () => { // slide 3: one clean piece on a calm backdrop
-  let s = bg("a3", "#14262b", "#0b1214", "rgba(255,255,255,.12)") + '<circle cx="700" cy="215" r="190" fill="#1d363c"/><path d="M60 330H330" stroke="#FFC107" stroke-width="3"/>';
-  return art("0 0 900 450", s + hang(640, 70, 3) + garment(640, 250, 3.2, "#e6e0d4", JKT));
+  let s = bg("a3", "#14262b", "#0b1214", "rgba(255,255,255,.12)") + '<circle cx="700" cy="215" r="190" fill="#1d363c"/>';
+  return art("0 0 900 450", s + hang(640, 70, 3) + garment(640, 250, 3.2, "#e6e0d4", JKT), "xMax");
 };
+
 const tileNew = () => art("0 0 400 260", bg("t1", "#1a1405", "#050505", "rgba(255,193,7,.3)") + hang(120, 58, 1.7) + garment(120, 140, 1.7, "#e9e3d3", TEE) +
   '<rect x="250" y="112" width="104" height="72" rx="12" fill="#1e1e1e" stroke="#FFC107" stroke-width="3"/><rect x="274" y="100" width="34" height="14" rx="4" fill="#FFC107"/><circle cx="302" cy="148" r="25" fill="#0a0a0a" stroke="#FFC107" stroke-width="4"/><circle cx="302" cy="148" r="10" fill="#FFC107"/><path d="M340 70l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" fill="#FFC107"/>');
 const tileBasics = () => {
@@ -301,21 +343,23 @@ const tileBoda = () => art("0 0 400 260", bg("t3", "#101010", "#1b1405", "rgba(2
   '<rect x="228" y="92" width="64" height="46" rx="5" fill="#FFC107" stroke="#b8860b" stroke-width="3"/><path d="M260 92v46" stroke="#b8860b" stroke-width="3"/>');
 
 /* ===================== HOME: hero carousel ===================== */
+// Drop real photos into an "images" folder with these names and they replace the illustrations automatically.
 const SLIDES = [
-  { art: heroRack,    img: "", title: "CLOSET: Kampala's Best Hand-Picked Thrift Deals!", text: "Quality-Checked Second Hand Clothes • Instant Bodaboda Delivery" },
-  { art: heroStacks,  img: "", title: "First Camera Selections!",     text: "New arrivals straight from Owino Market drops." },
-  { art: heroMinimal, img: "", title: "Everyday Wardrobe Basics!",    text: "Highly affordable pieces matching Think Twice rates." },
+  { art: heroRack,    img: "images/hero-1.jpg", title: "CLOSET: Kampala's Best Hand-Picked Thrift Deals!", text: "Quality-Checked Second Hand Clothes • Instant Bodaboda Delivery" },
+  { art: heroCamera,  img: "images/hero-2.jpg", title: "First Camera Selections!",  text: "New arrivals straight from Owino Market drops." },
+  { art: heroMinimal, img: "images/hero-3.jpg", title: "Everyday Wardrobe Basics!", text: "Highly affordable pieces matching Think Twice rates." },
 ];
 let slide = 0, slideTimer;
 function renderHero() {
   $("track").innerHTML = SLIDES.map((s, i) => `
-    <div class="relative h-[24rem] min-w-full overflow-hidden md:h-[30rem]" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${SLIDES.length}">
-      ${s.img ? `<img src="${s.img}" alt="" class="absolute inset-0 h-full w-full object-cover">` : s.art()}
-      <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/10"></div>
-      <div class="relative flex h-full max-w-2xl flex-col justify-center px-14 md:px-24">
+    <div class="relative flex h-[24rem] min-w-full items-center overflow-hidden md:h-[30rem]" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${SLIDES.length}">
+      ${s.art()}
+      <img src="${s.img}" alt="" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()">
+      <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30 md:from-black/85 md:via-black/50 md:to-transparent"></div>
+      <div class="relative z-10 flex max-w-2xl flex-col items-start justify-center px-14 md:px-24">
         <h1 class="text-2xl font-extrabold leading-tight tracking-tight text-white sm:text-3xl md:text-5xl">${s.title}</h1>
         <p class="mt-3 text-sm text-neutral-200 md:text-lg">${s.text}</p>
-        <a href="#fashion" class="mt-6 w-fit rounded-lg bg-white px-7 py-3 text-sm font-bold uppercase tracking-wider text-black transition hover:bg-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">Shop Now</a>
+        <a href="#fashion" class="mt-6 inline-flex items-center justify-center rounded-lg bg-white px-7 py-3 text-sm font-bold uppercase tracking-wider text-black transition hover:bg-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">Shop Now</a>
       </div></div>`).join("");
   $("dots").innerHTML = SLIDES.map((_, i) => `<button data-dot="${i}" aria-label="Go to slide ${i + 1}" class="h-2.5 w-2.5 rounded-full bg-white/40 transition-all"></button>`).join("");
   goSlide(0); playSlides();
@@ -338,13 +382,13 @@ $("hero").addEventListener("touchend", (e) => { const dx = e.changedTouches[0].c
 
 /* ===================== HOME: image tiles ===================== */
 const promos = [
-  { art: tileNew,    img: "", tag: "First Camera Selections", title: "NEW ARRIVALS",              text: "Fresh finds, photographed first and picked by us." },
-  { art: tileBasics, img: "", tag: "Wear them every day",     title: "EVERYDAY WARDROBE BASICS", text: "Tees, jeans and shirts that go with everything." },
-  { art: tileBoda,   img: "", tag: "Fast across Kampala",     title: "BODABODA TO YOUR DOOR",     text: "Pick your area at checkout and see your fare and arrival time." },
+  { art: tileNew,    img: "images/tile-new.jpg",      tag: "First Camera Selections", title: "NEW ARRIVALS",                          text: "Fresh finds, photographed first and picked by us." },
+  { art: tileBasics, img: "images/tile-basics.jpg",   tag: "Wear them every day",     title: "EVERYDAY WARDROBE BASICS",             text: "Tees, jeans and shirts that go with everything." },
+  { art: tileBoda,   img: "images/tile-delivery.jpg", tag: "Kampala & Entebbe",       title: "INSTANT KAMPALA DELIVERY • NO WAITING", text: "Pick your area at checkout to see your fare and arrival time." },
 ];
 $("promos").innerHTML = promos.map((p) => `
   <a href="#fashion" class="group relative flex h-60 flex-col justify-end overflow-hidden rounded-2xl border border-neutral-800 bg-card p-5 transition duration-300 hover:-translate-y-1 hover:border-gold hover:shadow-xl md:h-72 md:p-6">
-    ${p.img ? `<img src="${p.img}" alt="" class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">` : `<div class="absolute inset-0 transition-transform duration-500 group-hover:scale-105">${p.art()}</div>`}
+    <div class="absolute inset-0 transition-transform duration-500 group-hover:scale-105">${p.art()}<img src="${p.img}" alt="" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()"></div>
     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent"></div>
     <div class="relative">
       <span class="text-xs font-semibold uppercase tracking-widest text-gold">${p.tag}</span>
@@ -410,9 +454,11 @@ function bodyProfile() {
   return r <= 0.78 ? "Hourglass Profile" : r <= 0.86 ? "Athletic Profile" : "Rectangle Profile";
 }
 
-/* ===================== FIT ENGINE ===================== */
+/* ===================== FIT ENGINE (checks only the zones that matter for each garment) =====================
+   Tops and jackets: Chest/Bust.  Bottoms: Waist and Hips. */
 const T_TIGHT = 0.02, T_LOOSE = 0.10;  // spare room under 2% = tight, 10% or more = loose
-const LAYER_BULK = 1.5;                // inches an outer layer loses when worn over a top
+const LAYER_BULK = 1.5;                // inches of chest room a jacket loses when worn over a top
+const ZONES = { tops: ["bust"], outer: ["bust"], bottoms: ["waist", "hips"] };
 const RANK = { tight: 0, true: 1, loose: 2 };
 const FIT = {
   tight: { label: "Tight",        fill: "rgba(244,67,54,.55)", chip: "bg-red-500/20 text-red-300",       dot: "bg-red-500" },
@@ -422,18 +468,12 @@ const FIT = {
 const worst = (arr) => arr.reduce((a, b) => (RANK[b] < RANK[a] ? b : a));
 function itemFit(it) {
   const bulk = it.slot === "outer" && look.tops ? LAYER_BULK : 0;
-  return Object.fromEntries(Object.keys(it.size).map((z) => {
-    const ease = (it.size[z] * (1 + it.stretch) - bulk - body[z]) / body[z];
+  return Object.fromEntries(ZONES[it.slot].map((z) => {
+    const ease = (it.size[z] * (1 + it.stretch) - (z === "bust" ? bulk : 0) - body[z]) / body[z];
     return [z, ease < T_TIGHT ? "tight" : ease >= T_LOOSE ? "loose" : "true"];
   }));
 }
 const itemOverall = (it) => worst(Object.values(itemFit(it)));
-function zoneColours() {
-  const fits = worn().map((it) => ({ it, f: itemFit(it) }));
-  const pick = (z, ok) => { const a = fits.filter(ok).map((x) => x.f[z]).filter(Boolean); return a.length ? worst(a) : null; };
-  const upper = (x) => x.it.slot !== "bottoms";
-  return { bust: pick("bust", upper), waist: pick("waist", () => true), hips: look.bottoms ? itemFit(look.bottoms).hips : pick("hips", upper) };
-}
 
 /* ===================== MANNEQUIN DRAWING ===================== */
 const CX = 150, K = 2.33, hw = (inches) => (inches * K) / 2;
@@ -466,23 +506,23 @@ function drawMannequin() {
     <path d="${torso(body.bust, body.waist, body.hips, 215, sh)}"/>
     <path d="M${c - h} 213 L${c - 1} 213 L${c - 5} 396 L${c - a} 396Z M${c + 1} 213 L${c + h} 213 L${c + a} 396 L${c + 5} 396Z"/>
     <ellipse cx="${c - (a + 5) / 2}" cy="402" rx="17" ry="6"/><ellipse cx="${c + (a + 5) / 2}" cy="402" rx="17" ry="6"/></g>${hair}`;
-  const clip = [];
-  if (look.bottoms) { const d = bottomPath(look.bottoms); clip.push(d); s += look.bottoms.photo ? photoLayer(look.bottoms) : `<path d="${d}" fill="${look.bottoms.fill}" stroke="rgba(255,255,255,.35)"/>`; }
-  if (look.tops) { const r = upperGarment(look.tops, 208, 2); clip.push(r.d); s += look.tops.photo ? photoLayer(look.tops) : r.svg; }
-  if (look.outer) {                              // the jacket hangs open so the shirt underneath stays visible
-    const r = upperGarment(look.outer, 224, 7); clip.push(r.d); s += look.outer.photo ? photoLayer(look.outer) : r.svg;
-    if (!look.outer.photo) s += `<clipPath id="oc"><path d="${r.d}"/></clipPath><g clip-path="url(#oc)"><rect x="${c - 8}" y="92" width="16" height="140" fill="${look.tops ? look.tops.fill : "#1b1b1b"}"/></g>
-          <path d="M${c - 8} 94 L${c - 8} 224 M${c + 8} 94 L${c + 8} 224" stroke="rgba(255,255,255,.4)" stroke-width="1"/>`;
-  }
-  if (clip.length) {                             // fit colours: bust/chest, waist and hip bands, clipped to the clothes
-    const z = zoneColours(), band = (y, hg, k) => k ? `<rect x="0" y="${y}" width="300" height="${hg}" fill="${FIT[k].fill}"/>` : "";
-    s += `<clipPath id="wc">${clip.map((d) => `<path d="${d}"/>`).join("")}</clipPath><g clip-path="url(#wc)">${band(106, 42, z.bust)}${band(148, 44, z.waist)}${band(192, 58, z.hips)}</g>`;
-  }
+  const lineC = 'stroke="rgba(255,255,255,.35)"';
+  const band = (y, hg, k) => k ? `<rect x="0" y="${y}" width="300" height="${hg}" fill="${FIT[k].fill}"/>` : "";
+  const bands = (id, d, rects) => `<clipPath id="${id}"><path d="${d}"/></clipPath><g clip-path="url(#${id})">${rects}</g>`;
+  if (look.bottoms) { const it = look.bottoms, d = bottomPath(it), f = itemFit(it);       // bottoms: waist + hips colours
+    s += (it.photo ? photoLayer(it) : `<path d="${d}" fill="${it.fill}" ${lineC}/>`) + bands("cb", d, band(140, 70, f.waist) + band(210, 200, f.hips)); }
+  if (look.tops) { const it = look.tops, r = upperGarment(it, 208, 2);                     // tops: chest/bust colour
+    s += (it.photo ? photoLayer(it) : r.svg) + bands("ct", r.d, band(80, 170, itemFit(it).bust)); }
+  if (look.outer) {                                                                       // jackets: chest/bust colour, hanging open over the top
+    const it = look.outer, r = upperGarment(it, 224, 7);
+    s += it.photo ? photoLayer(it) : r.svg;
+    if (!it.photo) s += `<clipPath id="oc"><path d="${r.d}"/></clipPath><g clip-path="url(#oc)"><rect x="${c - 8}" y="92" width="16" height="140" fill="${look.tops ? look.tops.fill : "#1b1b1b"}"/></g><path d="M${c - 8} 94 L${c - 8} 224 M${c + 8} 94 L${c + 8} 224" stroke="rgba(255,255,255,.4)" stroke-width="1"/>`;
+    s += bands("co", r.d, band(80, 170, itemFit(it).bust)); }
   $("mSvg").innerHTML = s;
 }
 
 /* ===================== UI ===================== */
-const cm = (v) => Math.round(v * 2.54), show = (v) => (metric ? cm(v) + " cm" : Math.round(v * 2) / 2 + " in");
+const cm = (v) => Math.round(v * 2.54), half = (v) => Math.round(v * 2) / 2, show = (v) => (metric ? cm(v) + " cm" : half(v) + " in");
 
 function renderSliders() {
   const G = GENDER[gender];
@@ -495,65 +535,122 @@ function renderSliders() {
   document.querySelectorAll("[data-g]").forEach((b) => b.setAttribute("aria-checked", b.dataset.g === gender));
 }
 
+// WhatsApp order link: item name(s) + price + the shopper's current measurements (always in inches)
+const waLink = (name, price) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+  `Hello CLOSET, I'd like to order ${name} for UGX ${price.toLocaleString("en-UG")}. My measurements are Chest: ${half(body.bust)} in, Waist: ${half(body.waist)} in, Hips: ${half(body.hips)} in.`)}`;
+
 function renderResults() {
   const s = estimateSize();
   $("outLetter").textContent = s[0]; $("outUS").textContent = s[1]; $("outProfile").textContent = bodyProfile();
   const chip = (z, k) => `<span class="rounded px-2 py-1 text-[11px] font-semibold ${FIT[k].chip}">${zl(z)}: ${FIT[k].label}</span>`;
   const items = worn();
   $("fitList").innerHTML = items.length ? items.map((it) =>
-    `<div><div class="flex items-center justify-between"><p class="font-medium text-white">${it.title}</p><button data-rm="${it.slot}" class="px-2 py-1 text-neutral-500 hover:text-white" aria-label="Remove ${it.title}">✕</button></div>
+    `<div><div class="flex items-center justify-between"><p class="font-medium text-white">${it.title}</p><button data-layer="${it.slot}" class="px-2 py-1 text-neutral-500 hover:text-white" aria-label="Remove ${it.title}">✕</button></div>
      <div class="mt-0.5 flex flex-wrap gap-1">${Object.entries(itemFit(it)).map(([z, k]) => chip(z, k)).join("")}</div></div>`).join("")
     : '<p class="text-neutral-500">Tap "Try On" on any item. You can layer a jacket, a top and bottoms together.</p>';
   $("buyBtn").disabled = !items.length;
-  $("cartCount").textContent = items.length;
-  $("segBrowse").textContent = "Browse Items"; $("segRoom").textContent = "Fitting Room" + (items.length ? ` (${items.length})` : "");
+  const wa = $("waOutfit");
+  wa.classList.toggle("opacity-40", !items.length);
+  wa.href = items.length ? waLink(items.map((p) => p.title).join(" + "), items.reduce((t, p) => t + p.price, 0)) : "#";
 }
 
 function renderProducts() {
   const q = query.trim().toLowerCase();
-  const list = products.filter((p) => !q || (p.title + " " + p.tag + " " + p.slot).toLowerCase().includes(q));
+  const list = products.filter((p) => !q || (p.title + " " + p.slot).toLowerCase().includes(q));
   $("empty").classList.toggle("hidden", list.length > 0);
   const lab = { bust: "Chest", waist: "Waist", hips: "Hips" };
-  const sz = (p) => Object.entries(p.size).map(([z, v]) => `${lab[z]} ${metric ? cm(v) : v}`).join(" · ") + (metric ? " cm" : " in");
+  const sz = (p) => ZONES[p.slot].map((z) => `${lab[z]} ${metric ? cm(p.size[z]) : p.size[z]}`).join(" · ") + (metric ? " cm" : " in");
   $("grid").innerHTML = list.map((p) => {
-    const f = itemOverall(p), on = look[p.slot] && look[p.slot].id === p.id;
-    return `<article class="group flex flex-col overflow-hidden rounded-xl border bg-card transition duration-300 hover:-translate-y-1 hover:shadow-xl ${on ? "border-gold" : "border-neutral-800 hover:border-neutral-600"}">
-      <div class="flex aspect-[4/5] items-center justify-center bg-black">
-        ${p.photo ? `<img src="${p.photo}" alt="${p.title}" class="h-[88%] w-[88%] object-contain transition-transform duration-500 group-hover:scale-105">` : `<svg viewBox="${SHAPES[p.shape].vb}" class="w-3/5 transition-transform duration-500 group-hover:scale-105" aria-hidden="true"><path d="${SHAPES[p.shape].d}" fill="${p.fill}" stroke="rgba(255,255,255,.35)"/></svg>`}
+    const f = itemOverall(p), on = look[p.slot] && look[p.slot].id === p.id, inC = inCart(p.id);
+    return `<article class="card group flex flex-col overflow-hidden rounded-3xl border bg-card transition duration-300 hover:-translate-y-0.5 hover:shadow-xl ${on ? "border-gold" : "border-neutral-800 hover:border-neutral-600"}">
+      <div class="flex aspect-square items-center justify-center bg-black p-10">
+        ${p.photo ? `<img src="${p.photo}" alt="${p.title}" class="max-h-full max-w-full object-contain">`
+                  : `<svg viewBox="${SHAPES[p.shape].vb}" class="h-full w-full" aria-hidden="true"><path d="${SHAPES[p.shape].d}" fill="${p.fill}" stroke="rgba(255,255,255,.35)"/></svg>`}
       </div>
-      <div class="flex flex-1 flex-col gap-1 p-2.5 md:p-4">
-        <p class="text-[10px] font-medium uppercase tracking-wider text-neutral-500 md:text-xs">${p.tag}${p.for === "f" ? " · WOMEN'S" : p.for === "m" ? " · MEN'S" : ""}</p>
-        <h3 class="text-sm font-medium leading-snug text-white md:text-base">${p.title}</h3>
-        <p class="text-base font-bold text-gold md:text-lg">${ugx(p.price)}</p>
-        <p class="w-fit rounded bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold text-gold md:text-xs">Unique Piece - Only 1 Available</p>
-        <p class="text-[11px] text-neutral-300 md:text-xs">Condition: <b class="${p.cond === "Like New" ? "text-green-400" : "text-sky-300"}">${p.cond}</b></p>
-        <p class="text-[10px] text-neutral-500 md:text-[11px]">${sz(p)}</p>
-        <p class="flex items-center gap-1.5 text-[11px] text-neutral-300 md:text-xs"><i class="inline-block h-2 w-2 rounded-full ${FIT[f].dot}"></i>${FIT[f].label} on you</p>
-        <button data-id="${p.id}" class="try-btn mt-auto w-full rounded-lg bg-white py-3 text-sm font-bold text-black transition hover:bg-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:cursor-not-allowed disabled:opacity-50">${on ? "On mannequin ✓" : "Try On"}</button>
+      <div class="flex flex-1 flex-col gap-1.5 bg-card p-5">
+        <p class="text-xs font-medium uppercase tracking-wider text-neutral-500">${p.tag}</p>
+        <h3 class="text-xl font-bold leading-snug text-white">${p.title}</h3>
+        <p class="text-xl font-extrabold text-gold">${ugx(p.price)}</p>
+        <p class="text-xs text-neutral-400">Condition: <b class="${p.cond === "Like New" ? "text-green-400" : "text-sky-300"}">${p.cond}</b>${p.for === "f" ? " · Women's" : p.for === "m" ? " · Men's" : ""} · Only 1 left</p>
+        <p class="text-xs text-neutral-500">${sz(p)}</p>
+        <p class="flex items-center gap-1.5 text-xs text-neutral-300"><i class="inline-block h-2.5 w-2.5 rounded-full ${FIT[f].dot}"></i>${FIT[f].label} on you</p>
+        <div class="mt-auto grid grid-cols-2 gap-3 pt-3">
+          <button data-try="${p.id}" class="try-btn rounded-xl bg-gold px-2 py-3 text-sm font-bold text-black hover:bg-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white disabled:opacity-50">${on ? "On ✓" : "Try On"}</button>
+          <button data-add="${p.id}" ${inC ? "disabled" : ""} class="rounded-xl border border-neutral-500 px-2 py-3 text-sm font-bold text-white hover:bg-neutral-800 disabled:opacity-50">${inC ? "In Cart ✓" : "Add to Cart"}</button>
+        </div>
       </div></article>`;
   }).join("");
 }
 const renderAll = () => { drawMannequin(); renderResults(); renderProducts(); };
 
 /* ===================== TRY ON (adds a layer) ===================== */
-async function tryOn(id, btn) {
+async function tryOn(id) {
   if (busy) return;
   busy = true;
   const p = products.find((x) => x.id === id);
-  if (p.for && p.for !== "u" && p.for !== gender) { gender = p.for; body = bodies[gender]; renderSliders(); }   // match the mannequin to the item
+  if (p.for && p.for !== "u" && p.for !== gender) { gender = p.for; body = bodies[gender]; renderSliders(); }   // match the mannequin to the piece
   document.querySelectorAll(".try-btn").forEach((b) => (b.disabled = true));
-  btn.textContent = "Adding...";
   $("overlay").classList.remove("opacity-0");
-  await sleep(700);                             // short fitting animation
+  await sleep(700);
   look[p.slot] = p;                             // same slot replaces; different slots stack together
   $("overlay").classList.add("opacity-0"); busy = false;
   renderAll();
   toast(`${p.title} added to your mannequin`);
 }
 
+/* ===================== CART (each Add to Cart or Buy Outfit click adds 1 to the badge) ===================== */
+const cart = [];   // { name, price, ids: [product ids] }
+const inCart = (id) => cart.some((c) => c.ids.includes(id));
+const updateBadge = () => { $("cartCount").textContent = cart.length; };
+function addToCart(id) {
+  const p = products.find((x) => x.id === id);
+  if (inCart(id)) return toast("Already in your cart. Only 1 left!");
+  cart.push({ name: p.title, price: p.price, ids: [id] });
+  updateBadge(); renderProducts(); toast(`${p.title} added to cart`);
+}
+function buyOutfit() {
+  const fresh = worn().filter((p) => !inCart(p.id));
+  if (fresh.length) {
+    cart.push({ name: fresh.map((p) => p.title).join(" + "), price: fresh.reduce((t, p) => t + p.price, 0), ids: fresh.map((p) => p.id) });
+    updateBadge(); renderProducts();
+  } else toast("Those pieces are already in your cart");
+  openCart();
+}
+
+/* ----- SafeBoda delivery calculator (PLACEHOLDER fares/times: replace with your real rates) ----- */
+const AREAS = {
+  Makerere: { fare: 5000, mins: 60 },   Wandegeya: { fare: 5000, mins: 60 }, Kololo: { fare: 6000, mins: 60 },
+  Ntinda: { fare: 8000, mins: 75 },     Bugolobi: { fare: 8000, mins: 75 },  Nakawa: { fare: 8000, mins: 80 },
+  Kabalagala: { fare: 9000, mins: 90 }, Muyenga: { fare: 10000, mins: 90 },  Kansanga: { fare: 10000, mins: 95 },
+  Kireka: { fare: 12000, mins: 110 },   Entebbe: { fare: 25000, mins: 150 },
+};
+$("areaSel").innerHTML = '<option value="">Choose your area…</option>' + Object.entries(AREAS).map(([n, a]) => `<option value="${n}">${n} (${ugx(a.fare)})</option>`).join("");
+const hrs = (m) => (m >= 60 ? Math.floor(m / 60) + " hr " : "") + (m % 60 ? (m % 60) + " min" : "");
+
+function renderCart() {
+  const has = cart.length > 0, sub = cart.reduce((s, c) => s + c.price, 0), A = AREAS[area];
+  $("orderItems").innerHTML = has ? cart.map((c, i) => `<li class="flex items-start justify-between gap-3 py-2"><span class="min-w-0">${c.name}</span>
+      <span class="flex shrink-0 items-center gap-1">${ugx(c.price)}<button data-cart-rm="${i}" aria-label="Remove ${c.name}" class="px-2 py-1 text-neutral-500 hover:text-white">✕</button></span></li>`).join("")
+    : '<li class="py-2 text-neutral-500">Your cart is empty. Add a piece or tap Buy Outfit.</li>';
+  const ids = cart.flatMap((c) => c.ids), tight = products.filter((p) => ids.includes(p.id) && Object.values(itemFit(p)).includes("tight")).map((p) => p.title);
+  $("orderWarn").classList.toggle("hidden", !tight.length);
+  $("orderWarn").textContent = tight.length ? "Heads up: " + tight.join(" and ") + " may be tight on your measurements." : "";
+  $("deliveryBox").classList.toggle("hidden", !has); $("totals").classList.toggle("hidden", !has); $("whatsappLink").classList.toggle("hidden", !has);
+  if (A) {
+    const arrive = new Date(Date.now() + A.mins * 60000).toLocaleTimeString("en-UG", { hour: "numeric", minute: "2-digit" });
+    $("deliveryInfo").innerHTML = `Fare <b class="text-white">${ugx(A.fare)}</b> · arrives around <b class="text-white">${arrive}</b> (about ${hrs(A.mins)})`;
+  } else $("deliveryInfo").textContent = "Pick your area to see the fare and arrival time.";
+  $("tItems").textContent = ugx(sub); $("tDelivery").textContent = A ? ugx(A.fare) : "Choose area"; $("tTotal").textContent = ugx(sub + (A ? A.fare : 0));
+  $("whatsappLink").href = has ? waLink(cart.map((c) => c.name).join(" + "), sub) : "#";
+}
+function openCart() { renderCart(); $("orderDialog").showModal(); }
+
 /* ===================== EVENTS ===================== */
-$("grid").addEventListener("click", (e) => { const b = e.target.closest(".try-btn"); if (b) tryOn(Number(b.dataset.id), b); });
-$("fitList").addEventListener("click", (e) => { const b = e.target.closest("[data-rm]"); if (b) { look[b.dataset.rm] = null; renderAll(); } });
+$("grid").addEventListener("click", (e) => {
+  const t = e.target.closest("[data-try]"), a = e.target.closest("[data-add]");
+  if (t) tryOn(Number(t.dataset.try)); else if (a) addToCart(Number(a.dataset.add));
+});
+$("fitList").addEventListener("click", (e) => { const b = e.target.closest("[data-layer]"); if (b) { look[b.dataset.layer] = null; renderAll(); } });
 document.querySelectorAll("[data-g]").forEach((b) => b.onclick = () => { gender = b.dataset.g; body = bodies[gender]; renderSliders(); renderAll(); });
 $("sliders").addEventListener("input", (e) => {
   const z = e.target.dataset.z; if (!z) return;
@@ -564,44 +661,16 @@ $("sliders").addEventListener("input", (e) => {
 $("uIn").onclick = () => { metric = false; renderSliders(); renderProducts(); };
 $("uCm").onclick = () => { metric = true; renderSliders(); renderProducts(); };
 $("resetBtn").onclick = () => { if (busy) return; look.bottoms = look.tops = look.outer = null; renderAll(); };   // clears every clothing layer
+$("buyBtn").onclick = buyOutfit;
+$("cartBtn").onclick = openCart;
+$("waOutfit").addEventListener("click", (e) => { if (!worn().length) { e.preventDefault(); toast("Try on an item first"); } });
+$("areaSel").onchange = (e) => { area = e.target.value; renderCart(); };
+$("orderItems").addEventListener("click", (e) => { const b = e.target.closest("[data-cart-rm]"); if (b) { cart.splice(Number(b.dataset.cartRm), 1); updateBadge(); renderProducts(); renderCart(); } });
+$("closeDialog").onclick = () => $("orderDialog").close();
 
-/* ----- Bodaboda delivery calculator (PLACEHOLDER fares/times: replace with your real rates) ----- */
-const AREAS = {
-  Makerere: { fare: 5000, mins: 60 },  Wandegeya: { fare: 5000, mins: 60 }, Kololo: { fare: 6000, mins: 60 },
-  Ntinda: { fare: 8000, mins: 75 },    Bugolobi: { fare: 8000, mins: 75 },  Nakawa: { fare: 8000, mins: 80 },
-  Kabalagala: { fare: 9000, mins: 90 }, Muyenga: { fare: 10000, mins: 90 }, Kansanga: { fare: 10000, mins: 95 }, Kireka: { fare: 12000, mins: 110 },
-};
-$("areaSel").innerHTML = '<option value="">Choose your area…</option>' + Object.entries(AREAS).map(([n, a]) => `<option value="${n}">${n} (${ugx(a.fare)})</option>`).join("");
-const hrs = (m) => (m >= 60 ? Math.floor(m / 60) + " hr " : "") + (m % 60 ? (m % 60) + " min" : "");
-
-function renderCheckout() {
-  const items = worn(), has = items.length > 0, sub = items.reduce((s, p) => s + p.price, 0), A = AREAS[area];
-  $("orderItems").innerHTML = has ? items.map((p) => `<li class="flex justify-between gap-3 py-2"><span>${p.title}<span class="block text-xs text-neutral-500">Condition: ${p.cond}</span></span><span class="shrink-0">${ugx(p.price)}</span></li>`).join("")
-    : '<li class="py-2 text-neutral-500">Your outfit is empty. Try something on first.</li>';
-  const tight = items.filter((p) => Object.values(itemFit(p)).includes("tight")).map((p) => p.title);
-  $("orderWarn").classList.toggle("hidden", !tight.length);
-  $("orderWarn").textContent = tight.length ? "Heads up: " + tight.join(" and ") + " may be tight on your measurements." : "";
-  $("deliveryBox").classList.toggle("hidden", !has); $("totals").classList.toggle("hidden", !has); $("whatsappLink").classList.toggle("hidden", !has);
-  if (A) {
-    const arrive = new Date(Date.now() + A.mins * 60000).toLocaleTimeString("en-UG", { hour: "numeric", minute: "2-digit" });
-    $("deliveryInfo").innerHTML = `Fare <b class="text-white">${ugx(A.fare)}</b> · arrives around <b class="text-white">${arrive}</b> (about ${hrs(A.mins)})`;
-  } else $("deliveryInfo").textContent = "Pick your area to see the fare and arrival time.";
-  $("tItems").textContent = ugx(sub); $("tDelivery").textContent = A ? ugx(A.fare) : "Choose area"; $("tTotal").textContent = ugx(sub + (A ? A.fare : 0));
-  const wa = $("whatsappLink");
-  wa.classList.toggle("pointer-events-none", !A); wa.classList.toggle("opacity-40", !A);
-  const [letter] = estimateSize();
-  wa.href = A ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello CLOSET, I'd like to order: " + items.map((p) => `${p.title} (${ugx(p.price)})`).join("; ") +
-    `. Delivery to ${area}: ${ugx(A.fare)}. Total: ${ugx(sub + A.fare)}. My size: ${letter}.`)}` : "#";
-}
-const openOrder = () => { renderCheckout(); $("orderDialog").showModal(); };
-$("areaSel").onchange = (e) => { area = e.target.value; renderCheckout(); };
-$("buyBtn").onclick = openOrder; $("cartBtn").onclick = openOrder; $("closeDialog").onclick = () => $("orderDialog").close();
-
-/* ----- search + quick filters ----- */
-function runSearch(v) { query = v; $("q").value = v; location.hash = "#fashion"; showView("fashion"); setMobileTab("browse"); renderProducts(); }
+function runSearch(v) { query = v; $("q").value = v; location.hash = "#fashion"; showView("fashion"); renderProducts(); }
 $("searchForm").addEventListener("submit", (e) => { e.preventDefault(); runSearch($("q").value); });
 $("q").addEventListener("input", (e) => { query = e.target.value; renderProducts(); });
-document.querySelectorAll("[data-q]").forEach((b) => b.onclick = () => runSearch(b.dataset.q));
 
 /* ===================== SECRET ADMIN PANEL =====================
    NOTE: this key sits in the page source, so it only hides the panel from casual visitors.
@@ -694,7 +763,7 @@ $("uploadList").addEventListener("click", (e) => {
 });
 
 /* ===================== START ===================== */
-loadUploads(); renderHero(); renderSliders(); renderAll(); setMobileTab("room"); showView(location.hash.slice(1));
+loadUploads(); renderHero(); renderSliders(); renderAll(); updateBadge(); showView(location.hash.slice(1));
 </script>
 </body>
 </html>
