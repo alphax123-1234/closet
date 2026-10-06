@@ -13,10 +13,14 @@
   .tab[aria-current="page"] { color: #fff; border-color: #FFC107; }
   .seg[aria-pressed="true"], .seg[aria-checked="true"] { background: #FFC107; color: #000; font-weight: 700; }
   select { color-scheme: dark; }
-  /* Large rounded cards, two per row on desktop (matches reference) */
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-  .card { width: 100%; }
-  @media (max-width: 639px) { .cards { grid-template-columns: 1fr; gap: 16px; } }
+  /* Jumia-style compact catalog: 2 cols phone, 3 tablet, 4 desktop; borderless tiles */
+  .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; }
+  @media (min-width: 768px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 1280px) { .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .card { width: 100%; max-width: 220px; }
+  .hscroll { scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .hscroll::-webkit-scrollbar { display: none; }
+  .hscroll > * { scroll-snap-align: start; }
   @media (prefers-reduced-motion: reduce) { .shimmer-bar { animation: none; } }
 </style>
 </head>
@@ -94,15 +98,16 @@
 
 <!-- ================= VIEW 1: HOME ================= -->
 <section id="view-home" class="hidden">
-  <div id="hero" class="relative overflow-hidden rounded-3xl border border-neutral-800 bg-card" role="group" aria-roledescription="carousel" aria-label="Featured offers">
+  <div id="hero" class="relative overflow-hidden rounded-2xl bg-card md:rounded-3xl" role="group" aria-roledescription="carousel" aria-label="Featured offers">
     <div id="track" class="flex transition-transform duration-700 ease-in-out"></div>
-    <button id="prevBtn" aria-label="Previous slide" class="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white ring-1 ring-white/20 hover:bg-black md:left-4 md:p-3">
+    <button id="prevBtn" aria-label="Previous slide" class="absolute left-2 top-1/2 z-20 hidden md:block -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white ring-1 ring-white/20 hover:bg-black md:left-4 md:p-3">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
-    <button id="nextBtn" aria-label="Next slide" class="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white ring-1 ring-white/20 hover:bg-black md:right-4 md:p-3">
+    <button id="nextBtn" aria-label="Next slide" class="absolute right-2 top-1/2 z-20 hidden md:block -translate-y-1/2 rounded-full bg-black/60 p-2.5 text-white ring-1 ring-white/20 hover:bg-black md:right-4 md:p-3">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
-    <div id="dots" class="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2"></div>
-  </div>
-  <div id="promos" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 md:mt-8 md:gap-6"></div>
+    </div>
+  <div id="dots" class="mt-3 flex items-center justify-center gap-2"></div>
+
+  <div id="promos" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 md:mt-6 md:gap-6"></div>
 </section>
 
 <!-- ================= VIEW 2: FASHION + TRY-ON ROOM ================= -->
@@ -169,7 +174,7 @@
 
     <!-- Catalog -->
     <div id="browse" class="min-w-0 pt-2 md:col-span-8 md:pt-0">
-      <h1 class="mb-4 text-2xl font-bold text-white md:mb-6 md:text-3xl">Hand-Picked Thrift</h1>
+      <h1 class="mb-3 text-xl font-bold text-white md:mb-4 md:text-2xl">Hand-Picked Thrift</h1>
       <div id="grid" class="cards"></div>
       <p id="empty" class="hidden py-10 text-center text-neutral-500">No items match your search.</p>
     </div>
@@ -352,23 +357,23 @@ const SLIDES = [
 let slide = 0, slideTimer;
 function renderHero() {
   $("track").innerHTML = SLIDES.map((s, i) => `
-    <div class="relative flex h-[24rem] min-w-full items-center overflow-hidden md:h-[30rem]" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${SLIDES.length}">
-      ${s.art()}
+    <div class="relative flex h-48 min-w-full items-center overflow-hidden bg-black sm:h-64 md:h-[30rem]" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${SLIDES.length}">
+      <div class="absolute inset-y-0 right-0 w-1/2 sm:w-3/5 md:inset-0 md:w-auto">${s.art()}</div>
       <img src="${s.img}" alt="" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()">
-      <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/30 md:from-black/85 md:via-black/50 md:to-transparent"></div>
-      <div class="relative z-10 flex max-w-2xl flex-col items-start justify-center px-14 md:px-24">
-        <h1 class="text-2xl font-extrabold leading-tight tracking-tight text-white sm:text-3xl md:text-5xl">${s.title}</h1>
-        <p class="mt-3 text-sm text-neutral-200 md:text-lg">${s.text}</p>
-        <a href="#fashion" class="mt-6 inline-flex items-center justify-center rounded-lg bg-white px-7 py-3 text-sm font-bold uppercase tracking-wider text-black transition hover:bg-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">Shop Now</a>
+      <div class="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent md:from-black/85 md:via-black/50"></div>
+      <div class="relative z-10 flex w-3/5 max-w-2xl flex-col items-start justify-center px-4 md:w-auto md:px-24">
+        <h1 class="text-lg font-extrabold leading-tight tracking-tight text-white sm:text-2xl md:text-5xl">${s.title}</h1>
+        <p class="mt-1.5 line-clamp-2 text-xs text-neutral-200 md:mt-3 md:text-lg">${s.text}</p>
+        <a href="#fashion" class="mt-3 inline-flex md:mt-6 items-center justify-center rounded-lg bg-white px-5 py-2 text-xs font-bold uppercase md:px-7 md:py-3 md:text-sm tracking-wider text-black transition hover:bg-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">Shop Now</a>
       </div></div>`).join("");
-  $("dots").innerHTML = SLIDES.map((_, i) => `<button data-dot="${i}" aria-label="Go to slide ${i + 1}" class="h-2.5 w-2.5 rounded-full bg-white/40 transition-all"></button>`).join("");
+  $("dots").innerHTML = SLIDES.map((_, i) => `<button data-dot="${i}" aria-label="Go to slide ${i + 1}" class="h-2 w-2 rounded-full bg-neutral-700 transition-all"></button>`).join("");
   goSlide(0); playSlides();
 }
 function goSlide(n) {
   slide = (n + SLIDES.length) % SLIDES.length;
   $("track").style.transform = `translateX(-${slide * 100}%)`;
   [...$("track").children].forEach((el, i) => { el.inert = i !== slide; });
-  [...$("dots").children].forEach((d, i) => { d.classList.toggle("bg-white", i === slide); d.classList.toggle("w-6", i === slide); i === slide ? d.setAttribute("aria-current", "true") : d.removeAttribute("aria-current"); });
+  [...$("dots").children].forEach((d, i) => { d.classList.toggle("bg-white", i === slide); d.classList.toggle("w-6", i === slide); d.classList.toggle("bg-neutral-700", i !== slide); i === slide ? d.setAttribute("aria-current", "true") : d.removeAttribute("aria-current"); });
 }
 function playSlides() { clearInterval(slideTimer); if (!matchMedia("(prefers-reduced-motion: reduce)").matches) slideTimer = setInterval(() => goSlide(slide + 1), 5000); }
 $("prevBtn").onclick = () => { goSlide(slide - 1); playSlides(); };
@@ -387,7 +392,7 @@ const promos = [
   { art: tileBoda,   img: "images/tile-delivery.jpg", tag: "Kampala & Entebbe",       title: "INSTANT KAMPALA DELIVERY • NO WAITING", text: "Pick your area at checkout to see your fare and arrival time." },
 ];
 $("promos").innerHTML = promos.map((p) => `
-  <a href="#fashion" class="group relative flex h-60 flex-col justify-end overflow-hidden rounded-2xl border border-neutral-800 bg-card p-5 transition duration-300 hover:-translate-y-1 hover:border-gold hover:shadow-xl md:h-72 md:p-6">
+  <a href="#fashion" class="group relative flex h-44 flex-col justify-end overflow-hidden rounded-2xl bg-card p-4 transition duration-300 hover:-translate-y-1 hover:border-gold hover:shadow-xl md:h-72 md:p-6">
     <div class="absolute inset-0 transition-transform duration-500 group-hover:scale-105">${p.art()}<img src="${p.img}" alt="" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()"></div>
     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent"></div>
     <div class="relative">
@@ -562,21 +567,20 @@ function renderProducts() {
   const sz = (p) => ZONES[p.slot].map((z) => `${lab[z]} ${metric ? cm(p.size[z]) : p.size[z]}`).join(" · ") + (metric ? " cm" : " in");
   $("grid").innerHTML = list.map((p) => {
     const f = itemOverall(p), on = look[p.slot] && look[p.slot].id === p.id, inC = inCart(p.id);
-    return `<article class="card group flex flex-col overflow-hidden rounded-3xl border bg-card transition duration-300 hover:-translate-y-0.5 hover:shadow-xl ${on ? "border-gold" : "border-neutral-800 hover:border-neutral-600"}">
-      <div class="flex aspect-square items-center justify-center bg-black p-10">
-        ${p.photo ? `<img src="${p.photo}" alt="${p.title}" class="max-h-full max-w-full object-contain">`
+    return `<article class="card group flex flex-col rounded-lg p-1.5 transition hover:bg-card ${on ? "ring-1 ring-gold" : ""}">
+      <div class="relative flex h-40 items-center justify-center overflow-hidden rounded-md bg-[#161616] p-3 md:h-44">
+        ${p.photo ? `<img src="${p.photo}" alt="${p.title}" class="h-full w-full object-contain">`
                   : `<svg viewBox="${SHAPES[p.shape].vb}" class="h-full w-full" aria-hidden="true"><path d="${SHAPES[p.shape].d}" fill="${p.fill}" stroke="rgba(255,255,255,.35)"/></svg>`}
+        <span class="absolute right-1 top-1 rounded bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold text-gold">1 left</span>
       </div>
-      <div class="flex flex-1 flex-col gap-1.5 bg-card p-5">
-        <p class="text-xs font-medium uppercase tracking-wider text-neutral-500">${p.tag}</p>
-        <h3 class="text-xl font-bold leading-snug text-white">${p.title}</h3>
-        <p class="text-xl font-extrabold text-gold">${ugx(p.price)}</p>
-        <p class="text-xs text-neutral-400">Condition: <b class="${p.cond === "Like New" ? "text-green-400" : "text-sky-300"}">${p.cond}</b>${p.for === "f" ? " · Women's" : p.for === "m" ? " · Men's" : ""} · Only 1 left</p>
-        <p class="text-xs text-neutral-500">${sz(p)}</p>
-        <p class="flex items-center gap-1.5 text-xs text-neutral-300"><i class="inline-block h-2.5 w-2.5 rounded-full ${FIT[f].dot}"></i>${FIT[f].label} on you</p>
-        <div class="mt-auto grid grid-cols-2 gap-3 pt-3">
-          <button data-try="${p.id}" class="try-btn rounded-xl bg-gold px-2 py-3 text-sm font-bold text-black hover:bg-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white disabled:opacity-50">${on ? "On ✓" : "Try On"}</button>
-          <button data-add="${p.id}" ${inC ? "disabled" : ""} class="rounded-xl border border-neutral-500 px-2 py-3 text-sm font-bold text-white hover:bg-neutral-800 disabled:opacity-50">${inC ? "In Cart ✓" : "Add to Cart"}</button>
+      <div class="mt-2 flex flex-1 flex-col gap-0.5">
+        <h3 class="truncate text-xs text-neutral-200">${p.title}</h3>
+        <p class="text-sm font-bold text-white">${ugx(p.price)}</p>
+        <p class="text-[10px] text-neutral-500">${p.cond} · ${sz(p)}</p>
+        <p class="flex items-center gap-1 text-[10px] text-neutral-400"><i class="inline-block h-2 w-2 rounded-full ${FIT[f].dot}"></i>${FIT[f].label} on you</p>
+        <div class="mt-auto grid grid-cols-2 gap-1.5 pt-1.5">
+          <button data-try="${p.id}" class="try-btn rounded-md bg-gold px-1 py-2 text-[11px] font-bold text-black hover:bg-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white disabled:opacity-50">${on ? "On ✓" : "Try On"}</button>
+          <button data-add="${p.id}" ${inC ? "disabled" : ""} class="rounded-md border border-neutral-600 px-1 py-2 text-[11px] font-bold text-white hover:bg-neutral-800 disabled:opacity-50">${inC ? "In Cart ✓" : "Add"}</button>
         </div>
       </div></article>`;
   }).join("");
