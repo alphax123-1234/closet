@@ -5,88 +5,401 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CLOSET | Uganda's Best Prices</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { theme: { extend: { colors: { gold: "#FFC107", electric: "#2196F3" } } } };</script>
+<style>
+  @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+  .shimmer-bar { animation: shimmer 1.3s linear infinite; }
+  input[type=range] { accent-color: #2196F3; width: 100%; }
+  .tab[aria-current="page"] { color: #fff; border-color: #FFC107; }
+  @media (prefers-reduced-motion: reduce) { .shimmer-bar { animation: none; } }
+</style>
 </head>
 <body class="bg-black font-sans text-neutral-200 antialiased">
-<div id="site-header"></div>
 
-<main class="mx-auto max-w-7xl space-y-5 px-3 py-4 md:space-y-8 md:px-8 md:py-6">
+<!-- Fabric patterns live outside any hidden view so every SVG can use them -->
+<svg width="0" height="0" class="absolute" aria-hidden="true"><defs>
+  <pattern id="p-dots" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="#d9822b"/><circle cx="6" cy="6" r="3" fill="#fff3d6"/></pattern>
+  <pattern id="p-stripes" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="14" height="14" fill="#1f6f5c"/><rect width="5" height="14" fill="#f2c14e"/></pattern>
+</defs></svg>
 
-  <!-- HERO: full-width promotional banner -->
-  <section class="relative overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-950 px-6 py-14 md:px-16 md:py-28"
-           style="background-image: radial-gradient(60% 90% at 85% 10%, rgba(251,191,36,.22), transparent 60%), radial-gradient(40% 60% at 5% 100%, rgba(255,255,255,.07), transparent 70%)">
-    <p class="text-xs font-semibold uppercase tracking-[0.35em] text-amber-400">Limited-time offers</p>
+<!-- ================= GLOBAL HEADER ================= -->
+<header class="sticky top-0 z-40 border-b border-neutral-800 bg-black/90 backdrop-blur">
+  <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-2 px-3 pt-3 md:px-8">
+    <div class="flex items-center gap-2">
+      <button id="menuBtn" aria-label="Menu" aria-expanded="false" class="rounded-lg p-2 text-neutral-300 hover:bg-neutral-900 hover:text-white">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <a href="#home" class="text-2xl font-extrabold tracking-[0.3em] text-white">CLOSET</a>
+    </div>
+
+    <form id="searchForm" class="order-last flex w-full items-center gap-2 rounded-full border border-neutral-700 bg-neutral-950 px-4 text-neutral-400 focus-within:border-electric md:order-none md:mx-auto md:w-auto md:max-w-2xl md:flex-1">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="search" placeholder="Search products, brands and categories" aria-label="Search" class="w-full bg-transparent py-3 text-sm text-white outline-none placeholder:text-neutral-500">
+    </form>
+
+    <div class="ml-auto flex items-center gap-1 text-sm md:ml-0">
+      <details class="relative">
+        <summary class="cursor-pointer list-none rounded-lg px-2.5 py-2 text-neutral-300 hover:bg-neutral-900 hover:text-white">Account</summary>
+        <div class="absolute right-0 mt-2 w-44 rounded-lg border border-neutral-800 bg-neutral-950 p-1 shadow-xl">
+          <button class="block w-full rounded px-3 py-2 text-left hover:bg-neutral-900">Sign in</button>
+          <button class="block w-full rounded px-3 py-2 text-left hover:bg-neutral-900">Create account</button>
+          <button class="block w-full rounded px-3 py-2 text-left hover:bg-neutral-900">My orders</button>
+        </div>
+      </details>
+      <a id="helpLink" target="_blank" rel="noopener" class="rounded-lg px-2.5 py-2 text-neutral-300 hover:bg-neutral-900 hover:text-white">Help</a>
+      <button id="cartBtn" class="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-neutral-300 hover:bg-neutral-900 hover:text-white">
+        Cart <span id="cartCount" class="min-w-5 rounded-full bg-gold px-1.5 text-center text-xs font-bold text-black">0</span>
+      </button>
+    </div>
+
+    <!-- Tabs: switch between the two views -->
+    <nav class="flex w-full gap-6 text-sm font-medium" aria-label="Main">
+      <a href="#home" data-tab="home" class="tab border-b-2 border-transparent py-2 text-neutral-400 hover:text-white">Home</a>
+      <a href="#fashion" data-tab="fashion" class="tab border-b-2 border-transparent py-2 text-neutral-400 hover:text-white">Fashion</a>
+    </nav>
+  </div>
+  <nav id="drawer" class="hidden border-t border-neutral-800 bg-neutral-950 px-3 py-2 text-sm md:px-8">
+    <a href="#home" class="mr-5 inline-block py-1 hover:text-gold">Home</a>
+    <a href="#fashion" class="mr-5 inline-block py-1 hover:text-gold">Fashion</a>
+    <a href="#fashion" class="inline-block py-1 hover:text-gold">Fashion Clearance</a>
+  </nav>
+</header>
+
+<main class="mx-auto max-w-7xl px-3 py-4 md:px-8 md:py-6">
+
+<!-- ================= VIEW 1: HOME ================= -->
+<section id="view-home" class="hidden">
+  <div class="relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 px-6 py-16 md:px-16 md:py-32"
+       style="background-image: radial-gradient(55% 90% at 88% 0%, rgba(255,193,7,.25), transparent 62%), radial-gradient(45% 70% at 0% 100%, rgba(33,150,243,.22), transparent 70%)">
+    <p class="text-xs font-semibold uppercase tracking-[0.35em] text-gold">Limited-time offers</p>
     <h1 class="mt-4 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-white md:text-6xl">
-      CLOSET: Uganda's Best Prices! <span class="text-amber-400">Up to 60% OFF</span>
+      CLOSET: Uganda's Best Prices! <span class="text-gold">Up to 60% OFF</span>
     </h1>
-    <p class="mt-4 max-w-xl text-neutral-400 md:text-lg">Fresh styles from Kampala boutiques. Try them on a model before you buy.</p>
-    <a href="fashion.html" class="mt-8 inline-block rounded-lg bg-amber-400 px-8 py-3.5 text-sm font-bold uppercase tracking-wider text-black transition hover:bg-amber-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Shop Now</a>
-  </section>
+    <p class="mt-3 text-sm text-neutral-400">T&amp;Cs apply</p>
+    <a href="#fashion" class="mt-8 inline-flex items-center gap-2 rounded-full bg-gold px-8 py-3.5 text-sm font-bold uppercase tracking-wider text-black transition hover:bg-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+      Shop Now
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+  </div>
+  <div id="promos" class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:mt-8 md:gap-6"></div>
+</section>
 
-  <!-- PROMO GRID: balanced multi-column teasers -->
-  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" id="promos"></section>
+<!-- ================= VIEW 2: FASHION + TRY-ON ================= -->
+<section id="view-fashion" class="hidden">
+  <div class="grid grid-cols-12 gap-3 md:gap-8">
+
+    <!-- LEFT: mannequin + sizing estimator -->
+    <aside class="sticky top-[8.5rem] col-span-5 max-h-[calc(100dvh-9.5rem)] self-start overflow-y-auto rounded-2xl border border-neutral-800 bg-neutral-950 p-2 md:col-span-4 md:p-4">
+      <div class="relative mx-auto aspect-[3/4] max-h-[44dvh] overflow-hidden rounded-xl bg-black">
+        <svg id="mSvg" viewBox="0 0 300 420" class="h-full w-full" role="img" aria-label="Mannequin showing garment fit"></svg>
+        <div id="overlay" class="pointer-events-none absolute inset-0 overflow-hidden bg-black/50 opacity-0 backdrop-blur-sm transition-opacity duration-200" role="status">
+          <div class="shimmer-bar absolute inset-y-0 w-2/3 bg-gradient-to-r from-transparent via-white/25 to-transparent"></div>
+          <p id="overlayText" class="absolute bottom-3 left-2 right-2 text-center text-xs font-medium text-white md:text-sm"></p>
+        </div>
+      </div>
+
+      <!-- Size results -->
+      <div class="mt-3 grid grid-cols-3 gap-1.5 text-center">
+        <div class="rounded-lg bg-neutral-900 p-2"><p class="text-[10px] uppercase text-neutral-500">Size</p><p id="outLetter" class="text-lg font-bold text-gold"></p></div>
+        <div class="rounded-lg bg-neutral-900 p-2"><p class="text-[10px] uppercase text-neutral-500">US</p><p id="outUS" class="text-lg font-bold text-white"></p></div>
+        <div class="rounded-lg bg-neutral-900 p-2"><p class="text-[10px] uppercase text-neutral-500">Profile</p><p id="outProfile" class="text-xs font-semibold leading-tight text-white md:text-sm"></p></div>
+      </div>
+
+      <!-- Fit legend + results for what's worn -->
+      <div class="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-neutral-400">
+        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-green-500"></i>Loose</span>
+        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-yellow-400"></i>True to size</span>
+        <span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-red-500"></i>Tight</span>
+      </div>
+      <div id="fitList" class="mt-2 space-y-2 text-xs"></div>
+
+      <!-- Sizing estimator -->
+      <div class="mt-4 border-t border-neutral-800 pt-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-white">Measurements</h2>
+          <div class="flex overflow-hidden rounded-lg border border-neutral-700 text-xs" role="group" aria-label="Units">
+            <button id="uIn" class="px-2.5 py-1">Inches</button>
+            <button id="uCm" class="px-2.5 py-1">Metric</button>
+          </div>
+        </div>
+        <div id="sliders" class="mt-3 space-y-3 text-xs"></div>
+      </div>
+
+      <div class="sticky bottom-0 -mx-2 mt-4 grid grid-cols-2 gap-2 bg-neutral-950 px-2 pb-1 pt-2 md:-mx-4 md:px-4">
+        <button id="resetBtn" class="rounded-lg border border-neutral-600 py-2.5 text-xs font-semibold uppercase tracking-wider text-white hover:bg-neutral-900 md:text-sm">Start Over</button>
+        <button id="buyBtn" disabled class="rounded-lg bg-electric py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-40 md:text-sm">Buy Outfit</button>
+      </div>
+    </aside>
+
+    <!-- RIGHT: catalog -->
+    <div class="col-span-7 min-w-0 md:col-span-8">
+      <h1 class="mb-4 text-xl font-bold text-white md:mb-6 md:text-2xl">Fashion</h1>
+      <div id="grid" class="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-5 xl:grid-cols-3"></div>
+      <p id="empty" class="hidden py-10 text-center text-neutral-500">No items match your search.</p>
+    </div>
+  </div>
+</section>
 </main>
 
 <footer class="mt-10 border-t border-neutral-800 py-6 text-center text-xs text-neutral-500">© CLOSET. Kampala, Uganda.</footer>
 
+<dialog id="orderDialog" class="w-[min(92vw,26rem)] rounded-2xl border border-neutral-800 bg-neutral-950 p-0 text-neutral-200 shadow-2xl backdrop:bg-black/70">
+  <div class="p-5">
+    <h2 class="text-lg font-semibold text-white">Your outfit</h2>
+    <ul id="orderItems" class="mt-3 divide-y divide-neutral-800 text-sm"></ul>
+    <p id="orderWarn" class="mt-3 hidden rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300 ring-1 ring-red-500/30"></p>
+    <p id="orderTotalRow" class="mt-3 flex justify-between font-semibold text-white"><span>Total</span><span id="orderTotal"></span></p>
+    <a id="whatsappLink" target="_blank" rel="noopener" class="mt-4 block rounded-lg bg-electric py-2.5 text-center text-sm font-bold text-white hover:bg-blue-400">Order on WhatsApp</a>
+    <button id="closeDialog" class="mt-2 w-full rounded-lg border border-neutral-700 py-2.5 text-sm font-medium hover:bg-neutral-900">Keep browsing</button>
+  </div>
+</dialog>
+
 <script>
-// ===== Shared: header + helpers (CLOSET) =====
-const WHATSAPP_NUMBER = "256700000000"; // placeholder: country code, no + or spaces
+const $ = (id) => document.getElementById(id);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ugx = (n) => "UGX " + n.toLocaleString("en-UG");
-const ic = (p) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
-const ICONS = {
-  search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
-  user: '<path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/>',
-  help: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
-  cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 2-1.5L22 7H6"/>',
-};
+const WHATSAPP_NUMBER = "256700000000"; // placeholder: country code, no + or spaces
 
-// Global header: logo (left) | search (centre) | Account, Help, Cart (right)
-function renderHeader({ cartHref }) {
-  const btn = "flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-neutral-300 transition hover:bg-neutral-900 hover:text-white";
-  document.getElementById("site-header").innerHTML = `
-  <header class="sticky top-0 z-40 border-b border-neutral-800 bg-black/90 backdrop-blur">
-    <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-3 py-3 md:px-8">
-      <a href="index.html" class="text-2xl font-bold tracking-[0.3em] text-white">CLOSET</a>
+/* ===================== NAVIGATION (SPA view toggle) ===================== */
+function showView(name) {
+  name = name === "fashion" ? "fashion" : "home";
+  $("view-home").classList.toggle("hidden", name !== "home");
+  $("view-fashion").classList.toggle("hidden", name !== "fashion");
+  document.querySelectorAll(".tab").forEach((t) => t.dataset.tab === name ? t.setAttribute("aria-current", "page") : t.removeAttribute("aria-current"));
+  $("drawer").classList.add("hidden"); $("menuBtn").setAttribute("aria-expanded", "false");
+  window.scrollTo(0, 0);
+}
+addEventListener("hashchange", () => showView(location.hash.slice(1)));
+$("menuBtn").onclick = (e) => { const open = $("drawer").classList.toggle("hidden") === false; e.currentTarget.setAttribute("aria-expanded", open); };
+$("helpLink").href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello, I need help with CLOSET")}`;
 
-      <form action="fashion.html" class="order-last flex w-full items-center gap-2 rounded-full border border-neutral-700 bg-neutral-950 px-4 text-neutral-400 focus-within:border-amber-400 md:order-none md:mx-auto md:w-auto md:max-w-xl md:flex-1">
-        ${ic(ICONS.search)}
-        <input id="q" name="q" type="search" placeholder="Search products, brands and boutiques" class="w-full bg-transparent py-2.5 text-sm text-white outline-none placeholder:text-neutral-500" aria-label="Search">
-      </form>
+/* ===================== HOME: promo teasers ===================== */
+const promos = [
+  { tag: "Up to 60% off", title: "FASHION CLEARANCE", text: "Last-chance prices on tops and bottoms.", c: "gold" },
+  { tag: "On clothes", title: "FREE SHIPPING ON CLOTHES", text: "Delivery across Kampala from selected boutiques.", c: "electric" },
+  { tag: "Just landed", title: "NEW ARRIVALS", text: "Fresh Kitenge, Ankara and linen pieces.", c: "gold" },
+  { tag: "New", title: "TRY BEFORE YOU BUY", text: "Check how any item fits your measurements.", c: "electric" },
+  { tag: "Local favourites", title: "KITENGE & ANKARA", text: "Bold prints from Kampala boutiques.", c: "gold" },
+  { tag: "Everyday", title: "DENIM DEALS", text: "Straight-leg and high-waist jeans.", c: "electric" },
+];
+$("promos").innerHTML = promos.map((p) => `
+  <a href="#fashion" class="group flex min-h-44 flex-col justify-between rounded-2xl border border-neutral-800 bg-neutral-950 p-6 transition duration-300 hover:-translate-y-1 hover:border-${p.c} hover:shadow-xl">
+    <div><span class="text-xs font-semibold uppercase tracking-widest text-${p.c}">${p.tag}</span>
+      <h2 class="mt-2 text-xl font-bold tracking-wide text-white">${p.title}</h2>
+      <p class="mt-2 text-sm text-neutral-400">${p.text}</p></div>
+    <span class="mt-5 text-sm font-medium text-white group-hover:text-${p.c}">Shop now →</span>
+  </a>`).join("");
 
-      <div class="ml-auto flex items-center gap-1 md:ml-0">
-        <details class="relative">
-          <summary class="${btn} cursor-pointer list-none">${ic(ICONS.user)}<span class="hidden sm:inline">Account</span></summary>
-          <div class="absolute right-0 mt-2 w-44 rounded-lg border border-neutral-800 bg-neutral-950 p-1 text-sm shadow-xl">
-            <button class="block w-full rounded px-3 py-2 text-left text-neutral-300 hover:bg-neutral-900">Sign in</button>
-            <button class="block w-full rounded px-3 py-2 text-left text-neutral-300 hover:bg-neutral-900">Create account</button>
-            <button class="block w-full rounded px-3 py-2 text-left text-neutral-300 hover:bg-neutral-900">My orders</button>
-          </div>
-        </details>
-        <a href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello, I need help with CLOSET")}" target="_blank" rel="noopener" class="${btn}">${ic(ICONS.help)}<span class="hidden sm:inline">Help</span></a>
-        <a id="cartLink" href="${cartHref}" class="${btn}">${ic(ICONS.cart)}<span class="hidden sm:inline">Cart</span>
-          <span id="cartCount" class="min-w-5 rounded-full bg-amber-400 px-1.5 text-center text-xs font-bold text-black">0</span></a>
-      </div>
-    </div>
-  </header>`;
+/* ===================== AI HOOKS (simulated; connect to your backend later) ===================== */
+// Never put API keys here: call YOUR server, which calls the background-removal / image-generation services.
+async function removeImageBackground(imageSrc) {
+  await sleep(900);                 // TODO: POST imageSrc to your background-removal route, return the clean PNG link
+  return imageSrc;
+}
+async function generateAIOutfit(modelId, itemData) {
+  await sleep(900);                 // TODO: POST model + clean garment to your try-on route, return { imageUrl }
+  return { imageUrl: null, itemData };
 }
 
-renderHeader({ cartHref: "fashion.html" });
-
-const promos = [
-  { tag: "Up to 60% off", title: "FASHION CLEARANCE", text: "Last-chance prices on tops and bottoms.", href: "fashion.html" },
-  { tag: "On eligible orders", title: "FREE SHIPPING", text: "Delivery across Kampala on selected boutiques.", href: "fashion.html" },
-  { tag: "Just landed", title: "NEW ARRIVALS", text: "Fresh Kitenge, Ankara and linen pieces.", href: "fashion.html" },
-  { tag: "New", title: "TRY BEFORE YOU BUY", text: "Dress a model with any item in seconds.", href: "fashion.html" },
+/* ===================== CATALOG (sizes are finished garment measurements, in inches) ===================== */
+// stretch = fabric give (0.15 = 15%). cut: "regular" | "wide" | "skirt". rise = y where bottoms start on the mannequin.
+const products = [
+  { id: 1, boutique: "Kololo Atelier",    title: "Linen Button Shirt",   price: 85000,  cat: "tops",    shape: "tops",     fill: "#e9e3d3",         size: { bust: 40, waist: 38, hips: 40 }, stretch: 0 },
+  { id: 2, boutique: "Bugolobi Bespoke",  title: "Kitenge Print Blouse", price: 70000,  cat: "tops",    shape: "tops",     fill: "url(#p-stripes)", size: { bust: 37, waist: 30, hips: 39 }, stretch: 0.03 },
+  { id: 3, boutique: "Ntinda Threads",    title: "Ribbed Knit Top",      price: 55000,  cat: "tops",    shape: "tops",     fill: "#7a9e8e",         size: { bust: 34, waist: 28, hips: 36 }, stretch: 0.15 },
+  { id: 4, boutique: "Kampala Threads",   title: "Ankara Print Shirt",   price: 50000,  cat: "tops",    shape: "tops",     fill: "url(#p-dots)",    size: { bust: 38, waist: 34, hips: 40 }, stretch: 0 },
+  { id: 5, boutique: "Kabalagala Style",  title: "High-Waist Trousers",  price: 120000, cat: "bottoms", shape: "trousers", fill: "#4b5d73",         size: { waist: 29, hips: 40 }, stretch: 0.02, cut: "regular", rise: 172 },
+  { id: 6, boutique: "Kololo Atelier",    title: "Wide-Leg Palazzo Pants", price: 105000, cat: "bottoms", shape: "wide",   fill: "#5b4b8a",         size: { waist: 32, hips: 46 }, stretch: 0, cut: "wide", rise: 178 },
+  { id: 7, boutique: "Ntinda Threads",    title: "Pleated Midi Skirt",   price: 95000,  cat: "bottoms", shape: "skirt",    fill: "#a33b4c",         size: { waist: 28, hips: 40 }, stretch: 0, cut: "skirt", rise: 180 },
+  { id: 8, boutique: "Muyenga Denim Co.", title: "Straight-Leg Jeans",   price: 110000, cat: "bottoms", shape: "trousers", fill: "#3f5f8a",         size: { waist: 30, hips: 39 }, stretch: 0.03, cut: "regular", rise: 186 },
 ];
-document.getElementById("promos").innerHTML = promos.map((p) => `
-  <a href="${p.href}" class="group flex min-h-48 flex-col justify-between rounded-2xl border border-neutral-800 bg-neutral-950 p-6 transition duration-300 hover:-translate-y-1 hover:border-amber-400/60 hover:shadow-[0_12px_40px_rgba(251,191,36,.12)]">
-    <div>
-      <span class="text-xs font-semibold uppercase tracking-widest text-amber-400">${p.tag}</span>
-      <h2 class="mt-2 text-xl font-bold tracking-wide text-white">${p.title}</h2>
-      <p class="mt-2 text-sm text-neutral-400">${p.text}</p>
-    </div>
-    <span class="mt-6 text-sm font-medium text-white group-hover:text-amber-400">Shop now →</span>
-  </a>`).join("");
+const SHAPES = { // card thumbnails (mannequin coordinates, cropped viewBox)
+  tops:     { d: "M96 98 Q150 82 204 98 L228 150 L208 164 L194 142 L196 222 L104 222 L106 142 L92 164 L72 150 Z", vb: "60 78 180 160" },
+  trousers: { d: "M104 212 L196 212 L188 395 L156 395 L150 265 L144 395 L112 395 Z", vb: "95 205 110 200" },
+  wide:     { d: "M104 212 L196 212 L214 395 L158 395 L150 265 L142 395 L86 395 Z", vb: "78 205 144 200" },
+  skirt:    { d: "M104 212 L196 212 L216 335 L84 335 Z", vb: "75 205 150 135" },
+};
+
+/* ===================== STATE ===================== */
+const DEFAULT = { bust: 37, waist: 29, hips: 38 };      // inches
+let body = { ...DEFAULT };
+const look = { tops: null, bottoms: null };
+let metric = false, busy = false, query = "";
+const RANGE = { bust: [28, 60], waist: [22, 52], hips: [30, 62] };
+const LABEL = { bust: "Bust", waist: "Waist", hips: "Hips" };
+
+/* ===================== SIZE + PROFILE ESTIMATOR ===================== */
+// Largest measurement decides the size. Limits are inches: [letter, US, max bust, max waist, max hips]
+const SIZES = [["XS","0-2",33,26,36],["S","4-6",35,28,38],["M","8-10",37,30,40],["L","12-14",40,33,43],["XL","16-18",43,36,46],["XXL","20-22",47,40,50],["3XL","24+",99,99,99]];
+function estimateSize({ bust, waist, hips }) {
+  return SIZES.find((s) => bust <= s[2] && waist <= s[3] && hips <= s[4]) || SIZES[SIZES.length - 1];
+}
+function bodyProfile({ bust: b, waist: w, hips: h }) {
+  const big = Math.max(b, h);
+  if (w >= 0.9 * b && w >= 0.85 * h) return "Apple Profile";
+  if (h >= b * 1.05) return "Pear Profile";
+  if (b >= h * 1.05) return "Inverted Triangle";
+  return w / big <= 0.8 ? "Hourglass Profile" : "Rectangle Profile";
+}
+
+/* ===================== FIT ENGINE (green / yellow / red) ===================== */
+const T_TIGHT = 0.02, T_LOOSE = 0.10;  // ease below 2% = tight; 10%+ = loose
+const RANK = { tight: 0, true: 1, loose: 2 };
+const FIT = {
+  tight: { label: "Tight",        fill: "rgba(244,67,54,.55)",  chip: "bg-red-500/20 text-red-300",       dot: "bg-red-500" },
+  true:  { label: "True to size", fill: "rgba(255,193,7,.50)",  chip: "bg-yellow-400/20 text-yellow-200", dot: "bg-yellow-400" },
+  loose: { label: "Loose",        fill: "rgba(76,175,80,.50)",  chip: "bg-green-500/20 text-green-300",   dot: "bg-green-500" },
+};
+const worst = (arr) => arr.reduce((a, b) => (RANK[b] < RANK[a] ? b : a));
+function zoneFit(bodyIn, garmentIn, stretch) {
+  const ease = (garmentIn * (1 + stretch) - bodyIn) / bodyIn;   // how much bigger the garment is than the body
+  return ease < T_TIGHT ? "tight" : ease >= T_LOOSE ? "loose" : "true";
+}
+const itemFit = (it) => Object.fromEntries(Object.keys(it.size).map((z) => [z, zoneFit(body[z], it.size[z], it.stretch)]));
+const itemOverall = (it) => worst(Object.values(itemFit(it)));
+
+/* ===================== MANNEQUIN DRAWING ===================== */
+const CX = 150, K = 2.33, hw = (inches) => (inches * K) / 2;   // inches of circumference -> half width in px
+function torso(bI, wI, hI, y2, sh) {
+  const b = hw(bI), w = hw(wI), h = hw(hI), c = CX, m = (t) => 172 + (y2 - 172) * t;
+  return `M${c - sh} 96 Q${c} 86 ${c + sh} 96 C${c + sh} 112 ${c + b} 114 ${c + b} 130 C${c + b} 150 ${c + w} 152 ${c + w} 172 C${c + w} ${m(.55)} ${c + h} ${m(.6)} ${c + h} ${y2} ` +
+         `L${c - h} ${y2} C${c - h} ${m(.6)} ${c - w} ${m(.55)} ${c - w} 172 C${c - w} 152 ${c - b} 150 ${c - b} 130 C${c - b} 114 ${c - sh} 112 ${c - sh} 96Z`;
+}
+function bottomPath(it) {
+  const s = 1 + it.stretch, c = CX, gw = hw(it.size.waist * s), gh = hw(it.size.hips * s), y0 = it.rise;
+  if (it.cut === "skirt") return `M${c - gw} ${y0} L${c + gw} ${y0} L${c + gh} 215 L${c + gh * 1.5} 335 L${c - gh * 1.5} 335 L${c - gh} 215Z`;
+  const ak = gh * (it.cut === "wide" ? 1.0 : 0.62);
+  return `M${c - gw} ${y0} L${c + gw} ${y0} L${c + gh} 215 L${c + ak} 395 L${c + 5} 395 L${c + 1} 265 L${c - 1} 265 L${c - 5} 395 L${c - ak} 395 L${c - gh} 215Z`;
+}
+function zoneColours() {
+  const ft = look.tops && itemFit(look.tops), fb = look.bottoms && itemFit(look.bottoms);
+  const wl = [ft && ft.waist, fb && fb.waist].filter(Boolean);
+  return { bust: ft ? ft.bust : null, waist: wl.length ? worst(wl) : null, hips: fb ? fb.hips : ft ? ft.hips : null };
+}
+function drawMannequin() {
+  const c = CX, b = hw(body.bust), h = hw(body.hips), a = h * 0.62;
+  let s = `<ellipse cx="150" cy="408" rx="75" ry="6" fill="rgba(255,255,255,.07)"/>
+    <g fill="#262626" stroke="#3d3d3d"><ellipse cx="150" cy="48" rx="22" ry="28"/><rect x="141" y="72" width="18" height="20"/>
+    <path d="M${c - 46} 98 L${c - b - 30} 205 L${c - b - 16} 211 L${c - b + 2} 135Z M${c + 46} 98 L${c + b + 30} 205 L${c + b + 16} 211 L${c + b - 2} 135Z"/>
+    <path d="${torso(body.bust, body.waist, body.hips, 215, 46)}"/>
+    <path d="M${c - h} 213 L${c - 1} 213 L${c - 5} 396 L${c - a} 396Z M${c + 1} 213 L${c + h} 213 L${c + a} 396 L${c + 5} 396Z"/>
+    <ellipse cx="${c - (a + 5) / 2}" cy="402" rx="17" ry="6"/><ellipse cx="${c + (a + 5) / 2}" cy="402" rx="17" ry="6"/></g>`;
+  const clip = [], line = 'stroke="rgba(255,255,255,.35)"';
+  if (look.bottoms) { const d = bottomPath(look.bottoms); clip.push(d); s += `<path d="${d}" fill="${look.bottoms.fill}" ${line}/>`; }
+  if (look.tops) {
+    const t = look.tops, g = 1 + t.stretch, d = torso(t.size.bust * g, t.size.waist * g, t.size.hips * g, 208, 48), gb = hw(t.size.bust * g);
+    clip.push(d);
+    s += `<path d="${d}" fill="${t.fill}" ${line}/>
+      <path d="M${c - 48} 97 L${c - gb - 26} 152 L${c - gb - 8} 164 L${c - gb} 138Z M${c + 48} 97 L${c + gb + 26} 152 L${c + gb + 8} 164 L${c + gb} 138Z" fill="${t.fill}" ${line}/>`;
+  }
+  if (clip.length) {   // colour bands, clipped to the garments, show where the fabric is tight / true / loose
+    const z = zoneColours(), band = (y, hgt, k) => k ? `<rect x="0" y="${y}" width="300" height="${hgt}" fill="${FIT[k].fill}"/>` : "";
+    s += `<clipPath id="wc">${clip.map((d) => `<path d="${d}"/>`).join("")}</clipPath>
+      <g clip-path="url(#wc)">${band(106, 42, z.bust)}${band(148, 44, z.waist)}${band(192, 58, z.hips)}</g>`;
+  }
+  $("mSvg").innerHTML = s;
+}
+
+/* ===================== UI RENDERING ===================== */
+const cm = (v) => Math.round(v * 2.54), show = (v) => (metric ? cm(v) + " cm" : Math.round(v * 2) / 2 + " in");
+
+function renderSliders() {
+  $("sliders").innerHTML = Object.keys(RANGE).map((z) => {
+    const [lo, hi] = RANGE[z];
+    return `<label class="block"><span class="flex justify-between"><span class="text-neutral-300">${LABEL[z]}</span><b id="v-${z}" class="text-white">${show(body[z])}</b></span>
+      <input data-z="${z}" type="range" min="${metric ? cm(lo) : lo}" max="${metric ? cm(hi) : hi}" step="${metric ? 1 : 0.5}" value="${metric ? cm(body[z]) : body[z]}" aria-label="${LABEL[z]} circumference"></label>`;
+  }).join("");
+  $("uIn").className = "px-2.5 py-1 " + (!metric ? "bg-electric font-semibold text-white" : "text-neutral-400");
+  $("uCm").className = "px-2.5 py-1 " + (metric ? "bg-electric font-semibold text-white" : "text-neutral-400");
+}
+
+function renderResults() {
+  const [letter, us] = estimateSize(body);
+  $("outLetter").textContent = letter; $("outUS").textContent = us; $("outProfile").textContent = bodyProfile(body);
+  const chip = (z, k) => `<span class="rounded px-1.5 py-0.5 text-[10px] font-semibold ${FIT[k].chip}">${LABEL[z]}: ${FIT[k].label}</span>`;
+  const items = [look.tops, look.bottoms].filter(Boolean);
+  $("fitList").innerHTML = items.length ? items.map((it) =>
+    `<div><p class="font-medium text-white">${it.title}</p><div class="mt-1 flex flex-wrap gap-1">${Object.entries(itemFit(it)).map(([z, k]) => chip(z, k)).join("")}</div></div>`).join("")
+    : '<p class="text-neutral-500">Tap "Try On" on an item to see how it fits.</p>';
+  $("buyBtn").disabled = !items.length;
+  $("cartCount").textContent = items.length;
+}
+
+function renderProducts() {
+  const q = query.trim().toLowerCase();
+  const list = products.filter((p) => !q || (p.title + " " + p.boutique + " " + p.cat).toLowerCase().includes(q));
+  $("empty").classList.toggle("hidden", list.length > 0);
+  const sz = (p) => Object.entries(p.size).map(([z, v]) => `${LABEL[z].toLowerCase()} ${metric ? cm(v) : v}`).join(" · ") + (metric ? " cm" : " in");
+  $("grid").innerHTML = list.map((p) => {
+    const f = itemOverall(p), on = look[p.cat] && look[p.cat].id === p.id;
+    return `<article class="group overflow-hidden rounded-xl border bg-neutral-950 transition duration-300 hover:-translate-y-1 hover:shadow-xl ${on ? "border-gold" : "border-neutral-800 hover:border-neutral-600"}">
+      <div class="flex aspect-[3/4] items-center justify-center bg-neutral-900">
+        <svg viewBox="${SHAPES[p.shape].vb}" class="w-3/5 transition-transform duration-500 group-hover:scale-105" aria-hidden="true"><path d="${SHAPES[p.shape].d}" fill="${p.fill}" stroke="rgba(255,255,255,.3)"/></svg>
+      </div>
+      <div class="space-y-1 p-3 md:p-4">
+        <p class="text-xs font-medium uppercase tracking-wider text-neutral-500">${p.boutique}</p>
+        <h3 class="font-medium text-white">${p.title}</h3>
+        <p class="text-base font-bold text-gold">${ugx(p.price)}</p>
+        <p class="text-[11px] text-neutral-500">Garment: ${sz(p)}</p>
+        <p class="flex items-center gap-1.5 text-xs text-neutral-300"><i class="inline-block h-2 w-2 rounded-full ${FIT[f].dot}"></i>${FIT[f].label} on you</p>
+        <button data-id="${p.id}" class="try-btn mt-2 w-full rounded-lg bg-white py-2.5 text-sm font-bold text-black transition hover:bg-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-electric disabled:cursor-not-allowed disabled:opacity-50">Try On</button>
+      </div></article>`;
+  }).join("");
+}
+
+const renderAll = () => { drawMannequin(); renderResults(); renderProducts(); };
+
+/* ===================== TRY ON ===================== */
+async function tryOn(id, btn) {
+  if (busy) return;
+  busy = true;
+  const p = products.find((x) => x.id === id);
+  document.querySelectorAll(".try-btn").forEach((b) => (b.disabled = true));
+  btn.textContent = "Fitting...";
+  $("overlay").classList.remove("opacity-0");
+  try {
+    $("overlayText").textContent = "Removing background…";
+    await removeImageBackground(p.id);                 // simulated step 1
+    $("overlayText").textContent = "Fitting garment…";
+    await generateAIOutfit("default-model", p);        // simulated step 2
+    look[p.cat] = p;                                   // the mannequin now wears it and the fit overlay is recalculated
+  } finally {
+    $("overlay").classList.add("opacity-0"); busy = false; renderAll();
+  }
+}
+
+/* ===================== EVENTS ===================== */
+$("grid").addEventListener("click", (e) => { const b = e.target.closest(".try-btn"); if (b) tryOn(Number(b.dataset.id), b); });
+$("sliders").addEventListener("input", (e) => {
+  const z = e.target.dataset.z; if (!z) return;
+  body[z] = metric ? Number(e.target.value) / 2.54 : Number(e.target.value);
+  $("v-" + z).textContent = show(body[z]);
+  drawMannequin(); renderResults(); renderProducts();   // the fit overlay updates live as you drag
+});
+$("uIn").onclick = () => { metric = false; renderSliders(); renderProducts(); };
+$("uCm").onclick = () => { metric = true; renderSliders(); renderProducts(); };
+$("resetBtn").onclick = () => { if (busy) return; look.tops = look.bottoms = null; body = { ...DEFAULT }; renderSliders(); renderAll(); };
+
+function openOrder() {
+  const items = [look.tops, look.bottoms].filter(Boolean), total = items.reduce((s, p) => s + p.price, 0), has = items.length > 0;
+  $("orderItems").innerHTML = has ? items.map((p) => `<li class="flex justify-between py-2"><span>${p.title}<span class="block text-xs text-neutral-500">${p.boutique}</span></span><span>${ugx(p.price)}</span></li>`).join("")
+    : '<li class="py-2 text-neutral-500">Your outfit is empty. Try something on first.</li>';
+  const tight = items.filter((p) => Object.values(itemFit(p)).includes("tight")).map((p) => p.title);
+  $("orderWarn").classList.toggle("hidden", !tight.length);
+  $("orderWarn").textContent = tight.length ? "Heads up: " + tight.join(" and ") + " may be tight on your measurements." : "";
+  $("orderTotalRow").classList.toggle("hidden", !has); $("whatsappLink").classList.toggle("hidden", !has);
+  $("orderTotal").textContent = ugx(total);
+  const sizeNote = ` My size: ${estimateSize(body)[0]} (bust ${Math.round(body.bust)}, waist ${Math.round(body.waist)}, hips ${Math.round(body.hips)} in).`;
+  $("whatsappLink").href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello, I'd like to order: " + items.map((p) => `${p.title} (${p.boutique}, ${ugx(p.price)})`).join("; ") + `. Total: ${ugx(total)}.` + sizeNote)}`;
+  $("orderDialog").showModal();
+}
+$("buyBtn").onclick = openOrder; $("cartBtn").onclick = openOrder; $("closeDialog").onclick = () => $("orderDialog").close();
+
+$("searchForm").addEventListener("submit", (e) => e.preventDefault());
+$("q").addEventListener("input", (e) => { query = e.target.value; if (query && location.hash !== "#fashion") location.hash = "#fashion"; renderProducts(); });
+
+/* ===================== START ===================== */
+renderSliders(); renderAll(); showView(location.hash.slice(1));
 </script>
 </body>
 </html>
