@@ -156,6 +156,7 @@
         </div>
         <div class="relative mx-auto mt-3 h-[40dvh] overflow-hidden rounded-2xl bg-black md:h-[44dvh]">
           <svg id="mSvg" viewBox="0 0 300 420" class="h-full w-full" role="img" aria-label="Mannequin showing garment fit"></svg>
+          <div id="lockMsg" class="pointer-events-none absolute inset-x-2 top-1/4 z-30 hidden rounded-xl bg-black/90 p-3 text-center text-sm font-semibold text-gold ring-1 ring-gold/40" role="alert"></div>
           <div id="soldMsg" class="pointer-events-none absolute inset-x-2 top-1/3 z-20 hidden rounded-xl bg-black/90 p-3 text-center text-sm font-semibold text-gold ring-1 ring-gold/40" role="alert"></div>
           <div id="overlay" class="pointer-events-none absolute inset-0 overflow-hidden rounded-xl bg-black/50 opacity-0 backdrop-blur-sm transition-opacity duration-200" role="status">
             <div class="shimmer-bar absolute inset-y-0 w-2/3 bg-gradient-to-r from-transparent via-white/25 to-transparent"></div>
@@ -301,9 +302,9 @@
         <p id="priceHint" class="mt-1 text-[11px] text-neutral-500">Steps of UGX 5,000 (hold Shift with ↑ ↓ for 10,000). Typed prices snap to the nearest 5,000.</p></div>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <label class="block"><span class="text-neutral-300">Gender model</span>
-          <select id="aGender" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option value="f">Female</option><option value="m">Male</option><option value="u">Both</option></select></label>
+          <select id="aGender" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option value="f">Female</option><option value="m">Male</option><option value="u">Unisex</option></select></label>
         <label class="block"><span class="text-neutral-300">Layer position</span>
-          <select id="aSlot" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option value="outer">Outerwear</option><option value="tops" selected>Top</option><option value="bottoms">Bottoms</option></select></label>
+          <select id="aSlot" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option value="outer">Outerwear</option><option value="tops" selected>Top</option><option value="bottoms">Bottoms</option><option value="full">Full Body (Dress)</option></select></label>
         <label class="block"><span class="text-neutral-300">Quality rating</span>
           <select id="aCond" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option>Like New</option><option>Gently Loved</option><option>Good Condition</option></select></label>
       </div>
@@ -315,7 +316,7 @@
         <label class="block"><span class="text-xs text-neutral-300">Garment Hips (in)</span>
           <input type="number" id="admin-item-hips" min="20" max="70" step="1" placeholder="e.g. 38" class="mt-1 w-full bg-black border border-[#333] p-2 text-white rounded-lg outline-none focus:border-gold disabled:opacity-30"></label>
       </div>
-      <p class="-mt-1 text-[11px] text-neutral-500">Tops &amp; outerwear use Chest only. Bottoms use Waist and Hips only. The unused boxes clear and lock automatically.</p>
+      <p class="-mt-1 text-[11px] text-neutral-500">Tops &amp; outerwear use Chest only. Bottoms use Waist and Hips only. Full Body uses all three. Unused boxes clear and lock automatically.</p>
       <label class="block"><span class="text-neutral-300">Photo (from your device)</span>
         <input id="aFile" type="file" accept="image/*" required class="mt-1 w-full rounded-lg border border-neutral-700 bg-black p-2 text-neutral-300 file:mr-3 file:rounded-md file:border-0 file:bg-gold file:px-3 file:py-2 file:font-semibold file:text-black"></label>
       <label class="flex items-center gap-2 text-neutral-300"><input id="aRm" type="checkbox" checked class="h-4 w-4 accent-yellow-400"> Remove a plain background (works best on a white or solid backdrop)</label>
@@ -480,24 +481,25 @@ $("promos").innerHTML = promos.map((p) => `
    size = finished garment measurements in inches (bust = bust/chest, hips = hem/hips)
    stretch = fabric give (0.15 = 15%). slot: outer | tops | bottoms */
 const products = [
-  { id: 1,  tag: "PREMIUM THRIFT",       title: "Vintage Denim Jacket",      price: 45000, slot: "outer",   shape: "outer",    fill: "#3f5f8a",         cond: "Gently Loved", size: { bust: 42, waist: 40, hips: 40 }, stretch: 0,    sleeve: "long" },
-  { id: 2,  tag: "FIRST CAMERA QUALITY", title: "Classic Linen Button Shirt", price: 30000, slot: "tops",    shape: "tops",     fill: "#e9e3d3",         cond: "Like New",     size: { bust: 41, waist: 39, hips: 41 }, stretch: 0,    sleeve: "long" },
-  { id: 3,  tag: "UNIQUE PIECE",         title: "Retro Graphic Tee",         price: 25000, slot: "tops",    shape: "tops",     fill: "url(#p-check)",   cond: "Gently Loved", size: { bust: 38, waist: 37, hips: 38 }, stretch: 0.05, sleeve: "short" },
-  { id: 4,  tag: "UNIQUE PIECE",         title: "Kitenge Print Blouse",      price: 35000, slot: "tops",    shape: "tops",     fill: "url(#p-stripes)", cond: "Like New",     size: { bust: 36, waist: 31, hips: 38 }, stretch: 0.03, sleeve: "short" },
-  { id: 5,  tag: "PREMIUM THRIFT",       title: "Ribbed Knit Sweater",       price: 40000, slot: "tops",    shape: "tops",     fill: "#7a9e8e",         cond: "Like New",     size: { bust: 35, waist: 30, hips: 36 }, stretch: 0.15, sleeve: "long" },
-  { id: 6,  tag: "FIRST CAMERA QUALITY", title: "Oversized Bomber Jacket",   price: 50000, slot: "outer",   shape: "outer",    fill: "#2f3d33",         cond: "Gently Loved", size: { bust: 46, waist: 44, hips: 44 }, stretch: 0,    sleeve: "long" },
-  { id: 7,  tag: "UNIQUE PIECE",         title: "Retro Cotton Trousers",     price: 30000, slot: "bottoms", shape: "trousers", fill: "#8a7a5a",         cond: "Gently Loved", size: { waist: 32, hips: 42 }, stretch: 0,    cut: "regular", rise: 184 },
-  { id: 8,  tag: "PREMIUM THRIFT",       title: "Straight-Leg Jeans",        price: 40000, slot: "bottoms", shape: "trousers", fill: "#274a78",         cond: "Like New",     size: { waist: 31, hips: 40 }, stretch: 0.03, cut: "regular", rise: 186 },
-  { id: 9,  tag: "FIRST CAMERA QUALITY", title: "High-Waist Mom Jeans",      price: 38000, slot: "bottoms", shape: "trousers", fill: "#5b7fb0",         cond: "Like New",     size: { waist: 28, hips: 40 }, stretch: 0.02, cut: "regular", rise: 172 },
-  { id: 10, tag: "UNIQUE PIECE",         title: "Pleated Midi Skirt",        price: 28000, slot: "bottoms", shape: "skirt",    fill: "#a33b4c",         cond: "Gently Loved", size: { waist: 28, hips: 40 }, stretch: 0,    cut: "skirt", rise: 180 },
+  { id: 1, for: "u",  tag: "PREMIUM THRIFT",       title: "Vintage Denim Jacket",      price: 45000, slot: "outer",   shape: "outer",    fill: "#3f5f8a",         cond: "Gently Loved", size: { bust: 42, waist: 40, hips: 40 }, stretch: 0,    sleeve: "long" },
+  { id: 2, for: "u",  tag: "FIRST CAMERA QUALITY", title: "Classic Linen Button Shirt", price: 30000, slot: "tops",    shape: "tops",     fill: "#e9e3d3",         cond: "Like New",     size: { bust: 41, waist: 39, hips: 41 }, stretch: 0,    sleeve: "long" },
+  { id: 3, for: "u",  tag: "UNIQUE PIECE",         title: "Retro Graphic Tee",         price: 25000, slot: "tops",    shape: "tops",     fill: "url(#p-check)",   cond: "Gently Loved", size: { bust: 38, waist: 37, hips: 38 }, stretch: 0.05, sleeve: "short" },
+  { id: 4, for: "f",  tag: "UNIQUE PIECE",         title: "Kitenge Print Blouse",      price: 35000, slot: "tops",    shape: "tops",     fill: "url(#p-stripes)", cond: "Like New",     size: { bust: 36, waist: 31, hips: 38 }, stretch: 0.03, sleeve: "short" },
+  { id: 5, for: "u",  tag: "PREMIUM THRIFT",       title: "Ribbed Knit Sweater",       price: 40000, slot: "tops",    shape: "tops",     fill: "#7a9e8e",         cond: "Like New",     size: { bust: 35, waist: 30, hips: 36 }, stretch: 0.15, sleeve: "long" },
+  { id: 6, for: "u",  tag: "FIRST CAMERA QUALITY", title: "Oversized Bomber Jacket",   price: 50000, slot: "outer",   shape: "outer",    fill: "#2f3d33",         cond: "Gently Loved", size: { bust: 46, waist: 44, hips: 44 }, stretch: 0,    sleeve: "long" },
+  { id: 7, for: "u",  tag: "UNIQUE PIECE",         title: "Retro Cotton Trousers",     price: 30000, slot: "bottoms", shape: "trousers", fill: "#8a7a5a",         cond: "Gently Loved", size: { waist: 32, hips: 42 }, stretch: 0,    cut: "regular", rise: 184 },
+  { id: 8, for: "u",  tag: "PREMIUM THRIFT",       title: "Straight-Leg Jeans",        price: 40000, slot: "bottoms", shape: "trousers", fill: "#274a78",         cond: "Like New",     size: { waist: 31, hips: 40 }, stretch: 0.03, cut: "regular", rise: 186 },
+  { id: 9, for: "f",  tag: "FIRST CAMERA QUALITY", title: "High-Waist Mom Jeans",      price: 38000, slot: "bottoms", shape: "trousers", fill: "#5b7fb0",         cond: "Like New",     size: { waist: 28, hips: 40 }, stretch: 0.02, cut: "regular", rise: 172 },
+  { id: 10, for: "f", tag: "UNIQUE PIECE",         title: "Pleated Midi Skirt",        price: 28000, slot: "bottoms", shape: "skirt",    fill: "#a33b4c",         cond: "Gently Loved", size: { waist: 28, hips: 40 }, stretch: 0,    cut: "skirt", rise: 180 },
 ];
 const SHAPES = { // card thumbnails
   tops:     { d: "M96 98 Q150 82 204 98 L228 150 L208 164 L194 142 L196 222 L104 222 L106 142 L92 164 L72 150 Z", vb: "60 78 180 160" },
   outer:    { d: "M92 98 Q150 80 208 98 L236 205 L216 211 L198 140 L200 228 L100 228 L102 140 L84 211 L64 205 Z M150 94 L150 228", vb: "55 75 190 160" },
   trousers: { d: "M104 212 L196 212 L188 395 L156 395 L150 265 L144 395 L112 395 Z", vb: "95 205 110 200" },
+  dress:    { d: "M112 98 L188 98 L204 228 L228 335 L72 335 L96 228 Z", vb: "60 90 180 255" },
   skirt:    { d: "M104 212 L196 212 L216 335 L84 335 Z", vb: "75 205 150 135" },
 };
-const SLOT_ORDER = ["bottoms", "tops", "outer"];  // drawing order = layering order
+const SLOT_ORDER = ["bottoms", "tops", "outer", "full"];  // drawing order = layering order
 
 /* ===================== STATE ===================== */
 const GENDER = {
@@ -506,7 +508,8 @@ const GENDER = {
 };
 const bodies = { f: { ...GENDER.f.def }, m: { ...GENDER.m.def } };   // measurements are remembered per mannequin
 let gender = "f", body = bodies.f;
-const look = { bottoms: null, tops: null, outer: null };            // up to 3 layers at once
+const look = { bottoms: null, tops: null, outer: null, full: null }; // max: one top-class piece + one bottom, or a single full-body piece
+const classOf = (slot) => (slot === "bottoms" ? "bottom" : slot === "full" ? "full" : "top");   // outerwear counts as a top
 let metric = false, busy = false, query = "", area = "";
 const zl = (z) => GENDER[gender].zones[z];
 const worn = () => SLOT_ORDER.map((s) => look[s]).filter(Boolean);
@@ -566,7 +569,7 @@ const worst = (arr) => arr.reduce((a, b) => (RANK[b] < RANK[a] ? b : a));
 function checkFitLogic(it) {
   // Rule A (Top / Outerwear): compare ONLY the garment chest with the Chest slider.
   // Rule B (Bottom): ignore chest completely; compare ONLY waist and hips with the Waist and Hips sliders.
-  const zones = it.slot === "bottoms" ? ["waist", "hips"] : ["bust"];
+  const zones = it.slot === "bottoms" ? ["waist", "hips"] : it.slot === "full" ? ["bust", "waist", "hips"] : ["bust"];
   const bulk = it.slot === "outer" && look.tops ? LAYER_BULK : 0;
   return Object.fromEntries(zones.filter((z) => it.size && it.size[z] > 0).map((z) => {
     const ease = (it.size[z] * (1 + it.stretch) - (z === "bust" ? bulk : 0) - body[z]) / body[z];
@@ -619,6 +622,9 @@ function drawMannequin() {
     s += it.photo ? photoLayer(it) : r.svg;
     if (!it.photo) s += `<clipPath id="oc"><path d="${r.d}"/></clipPath><g clip-path="url(#oc)"><rect x="${c - 8}" y="92" width="16" height="140" fill="${look.tops ? look.tops.fill : "#1b1b1b"}"/></g><path d="M${c - 8} 94 L${c - 8} 224 M${c + 8} 94 L${c + 8} 224" stroke="rgba(255,255,255,.4)" stroke-width="1"/>`;
     s += bands("co", r.d, band(84, 94, itemFit(it).bust)); }
+  if (look.full) {                                                                      // dress / romper: one piece, all three zones
+    const it = look.full, r = upperGarment(it, 330, 2);
+    s += (it.photo ? photoLayer(it) : r.svg) + bands("cf", r.d, band(84, 94, itemFit(it).bust) + band(170, 44, itemFit(it).waist) + band(214, 130, itemFit(it).hips)); }
   $("mSvg").innerHTML = s;
 }
 
@@ -648,7 +654,7 @@ function renderResults() {
   $("fitList").innerHTML = items.length ? items.map((it) =>
     `<div><div class="flex items-center justify-between"><p class="font-medium text-white">${it.title}</p><button data-layer="${it.slot}" class="px-2 py-1 text-neutral-500 hover:text-white" aria-label="Remove ${it.title}">✕</button></div>
      <div class="mt-0.5 flex flex-wrap gap-1">${Object.entries(itemFit(it)).map(([z, k]) => chip(z, k)).join("")}</div></div>`).join("")
-    : '<p class="text-neutral-500">Tap "Try On" on any item. You can layer a jacket, a top and bottoms together.</p>';
+    : '<p class="text-neutral-500">Tap "Try On" on any item. One top (or jacket) plus one bottom at a time, or a single full-body piece.</p>';
   $("buyBtn").disabled = !items.length;
   const wa = $("waOutfit");
   wa.classList.toggle("opacity-40", !items.length);
@@ -661,7 +667,7 @@ function renderProducts() {
   $("empty").classList.toggle("hidden", list.length > 0);
   const lab = { bust: "Chest", waist: "Waist", hips: "Hips" };
   const dim = (v) => (metric ? cm(v) + " cm" : v + " in");
-  const sz = (p) => (p.slot === "bottoms" ? `Waist: ${dim(p.size.waist)} • Hips: ${dim(p.size.hips)}` : `Chest: ${dim(p.size.bust)}`);
+  const sz = (p) => (p.slot === "bottoms" ? `Waist: ${dim(p.size.waist)} • Hips: ${dim(p.size.hips)}` : p.slot === "full" ? `Chest: ${dim(p.size.bust)} • Waist: ${dim(p.size.waist)} • Hips: ${dim(p.size.hips)}` : `Chest: ${dim(p.size.bust)}`);
   $("grid").innerHTML = list.map((p) => {
     const f = itemOverall(p), on = look[p.slot] && look[p.slot].id === p.id, inC = inCart(p.id);
     return `<article data-card="${p.id}" class="card group flex flex-col rounded-lg p-1.5 transition duration-500 hover:bg-card ${on ? "ring-1 ring-gold" : ""}">
@@ -701,15 +707,29 @@ function checkMannequinSold() {
 }
 
 /* ===================== TRY ON (adds a layer) ===================== */
+let lockTimer = null;
+function lockBanner(text) {                      // clean overlay warning on the mannequin
+  const m = $("lockMsg"); m.textContent = text; m.classList.remove("hidden");
+  clearTimeout(lockTimer); lockTimer = setTimeout(() => m.classList.add("hidden"), 4000);
+}
+const genderOk = (p) => !p.for || p.for === "u" || p.for === gender;       // 'u' = Unisex: never locked
+function enforceGenderLock() {                   // after toggling the mannequin, drop pieces that no longer fit that model
+  let dropped = false;
+  SLOT_ORDER.forEach((sl) => { if (look[sl] && !genderOk(look[sl])) { look[sl] = null; dropped = true; } });
+  if (dropped) lockBanner(`Removed pieces sized for the ${gender === "m" ? "Female" : "Male"} profile.`);
+}
 async function tryOn(id) {
   if (busy) return;
-  busy = true;
   const p = products.find((x) => x.id === id);
-  if (p.for && p.for !== "u" && p.for !== gender) { gender = p.for; body = bodies[gender]; renderSliders(); saveProfile(); }   // match the mannequin to the piece
+  if (!genderOk(p)) return lockBanner(`This unique piece is sized for the ${p.for === "f" ? "Female" : "Male"} profile. Toggle to the ${p.for === "f" ? "Female" : "Male"} Try-On room to check the fit!`);
+  busy = true;
   document.querySelectorAll(".try-btn").forEach((b) => (b.disabled = true));
   $("overlay").classList.remove("opacity-0");
   await sleep(700);
-  look[p.slot] = p;                             // same slot replaces; different slots stack together
+  const cls = classOf(p.slot);                  // strict exclusivity: one top-class piece, one bottom, or one full-body piece
+  if (cls === "full") { look.tops = look.outer = look.bottoms = null; }
+  else { look.full = null; if (cls === "top") { look.tops = null; look.outer = null; } }
+  look[p.slot] = p;
   $("overlay").classList.add("opacity-0"); busy = false;
   renderAll();
   toast(`${p.title} added to your mannequin`);
@@ -903,7 +923,7 @@ $("grid").addEventListener("click", (e) => {
   if (t) tryOn(Number(t.dataset.try)); else if (a) addToCart(Number(a.dataset.add));
 });
 $("fitList").addEventListener("click", (e) => { const b = e.target.closest("[data-layer]"); if (b) { look[b.dataset.layer] = null; renderAll(); } });
-document.querySelectorAll("[data-g]").forEach((b) => b.onclick = () => { gender = b.dataset.g; body = bodies[gender]; renderSliders(); renderAll(); saveProfile(); });
+document.querySelectorAll("[data-g]").forEach((b) => b.onclick = () => { gender = b.dataset.g; body = bodies[gender]; enforceGenderLock(); renderSliders(); renderAll(); saveProfile(); });
 $("sliders").addEventListener("input", (e) => {
   const z = e.target.dataset.z; if (!z) return;
   body[z] = metric ? Number(e.target.value) / 2.54 : Number(e.target.value);
@@ -972,8 +992,8 @@ const TYPICAL = { f: { bust: 37.5, waist: 30, hips: 40 }, m: { bust: 40, waist: 
 function makeItem({ title, price, gender, slot, cond, photo, chest, waist, hips, id }) {
   const t = TYPICAL[gender === "m" ? "m" : "f"], add = slot === "outer" ? 3 : 0;
   const C = Math.round(chest) || Math.round(t.bust + add), W = Math.round(waist) || Math.round(t.waist + add), H = Math.round(hips) || Math.round(t.hips + add);
-  return { id: id || Date.now(), tag: "UNIQUE PIECE", title, price, slot, layerPosition: slot === "bottoms" ? "Bottom" : slot === "outer" ? "Outer" : "Top",
-    shape: slot === "outer" ? "outer" : slot === "tops" ? "tops" : "trousers", fill: "#444", cond, for: gender, photo, upload: true, status: "available",
+  return { id: id || Date.now(), tag: "UNIQUE PIECE", title, price, slot, layerPosition: slot === "bottoms" ? "Bottom" : slot === "outer" ? "Outer" : slot === "full" ? "Full Body" : "Top",
+    shape: slot === "outer" ? "outer" : slot === "tops" ? "tops" : slot === "full" ? "dress" : "trousers", fill: "#444", cond, for: gender, photo, upload: true, status: "available",
     chest: slot === "bottoms" ? null : C, waist: W, hips: H,                       // integers stored on the product (inches)
     size: slot === "bottoms" ? { waist: W, hips: H } : { bust: C, waist: W, hips: H },
     stretch: 0.03, sleeve: "long", cut: "regular", rise: 186 };
@@ -981,6 +1001,7 @@ function makeItem({ title, price, gender, slot, cond, photo, chest, waist, hips,
 function photoLayer(it) {                                          // draws an uploaded photo on the mannequin
   const c = CX, g = 1 + it.stretch;
   if (it.slot === "bottoms") { const w = hw(it.size.hips * g) + 6; return `<image href="${it.photo}" x="${c - w}" y="182" width="${2 * w}" height="216" preserveAspectRatio="xMidYMid meet"/>`; }
+  if (it.slot === "full") { const w = hw(it.size.bust * g) + 34; return `<image href="${it.photo}" x="${c - w}" y="90" width="${2 * w}" height="250" preserveAspectRatio="xMidYMid meet"/>`; }
   const w = hw(it.size.bust * g) + (it.slot === "outer" ? 40 : 34);
   return `<image href="${it.photo}" x="${c - w}" y="${it.slot === "outer" ? 88 : 90}" width="${2 * w}" height="${it.slot === "outer" ? 145 : 128}" preserveAspectRatio="xMidYMid meet"/>`;
 }
@@ -1003,7 +1024,7 @@ $("adminForm").addEventListener("submit", async (e) => {
     const photo = await processPhoto(f, $("aRm").checked);
     const slot = $("aSlot").value, num = (id) => Math.round(Number($(id).value)) || 0;
     const chest = num("admin-item-chest"), waist = num("admin-item-waist"), hips = num("admin-item-hips");
-    if (slot === "bottoms" ? !(waist > 0 && hips > 0) : !(chest > 0)) throw new Error(slot === "bottoms" ? "Bottoms need the garment Waist and Hips (inches)." : "Tops and jackets need the garment Chest/Bust (inches).");
+    if (slot === "bottoms" ? !(waist > 0 && hips > 0) : slot === "full" ? !(chest > 0 && waist > 0 && hips > 0) : !(chest > 0)) throw new Error(slot === "bottoms" ? "Bottoms need the garment Waist and Hips (inches)." : slot === "full" ? "Full-body pieces need Chest, Waist and Hips (inches)." : "Tops and jackets need the garment Chest/Bust (inches).");
     const item = makeItem({ title, price, gender: $("aGender").value, slot, cond: $("aCond").value, photo, chest, waist, hips });
     uploads.push(item); products.unshift(item);
     if (!saveUploads()) toast("Added for this visit only (browser storage is full)");
@@ -1029,15 +1050,16 @@ $("uploadList").addEventListener("click", (e) => {
 /* ----- layer select: auto-clean the measurements that do not apply ----- */
 function syncSizeInputs() {
   const bottoms = $("aSlot").value === "bottoms", C = $("admin-item-chest"), W = $("admin-item-waist"), H = $("admin-item-hips");
-  C.disabled = bottoms; W.disabled = H.disabled = !bottoms;
-  if (bottoms) C.value = ""; else { W.value = ""; H.value = ""; }
+  const full = $("aSlot").value === "full";                 // Full Body: all three stay editable
+  C.disabled = bottoms; W.disabled = H.disabled = !(bottoms || full);
+  if (bottoms) C.value = ""; else if (!full) { W.value = ""; H.value = ""; }
 }
 $("aSlot").addEventListener("change", syncSizeInputs); syncSizeInputs();
 
 /* ----- auto-numbered titles: "Handpicked Female Bottom #05" ----- */
 const AUTONAME_KEY = "closet_autoname_counter";
 const nextAutoNum = () => { try { return (Number(localStorage.getItem(AUTONAME_KEY)) || 0) + 1; } catch { return 1; } };
-const autoTitle = (n) => `Handpicked ${{ f: "Female", m: "Male", u: "Unisex" }[$("aGender").value]} ${{ outer: "Outerwear", tops: "Top", bottoms: "Bottom" }[$("aSlot").value]} #${String(n).padStart(2, "0")}`;
+const autoTitle = (n) => `Handpicked ${{ f: "Female", m: "Male", u: "Unisex" }[$("aGender").value]} ${{ outer: "Outerwear", tops: "Top", bottoms: "Bottom", full: "Full Body" }[$("aSlot").value]} #${String(n).padStart(2, "0")}`;
 
 /* ----- price: UGX 5,000 steps ----- */
 const STEP = 5000, snap = (v) => Math.max(STEP, Math.round(v / STEP) * STEP);
@@ -1060,6 +1082,7 @@ function splitCSVLine(line) {                    // handles "quoted, values"
   return out.concat(cur.trim());
 }
 const layerToSlot = (v) => { v = String(v || "").toLowerCase();
+  if (/^(full|dress|romper|jump|gown|overall)/.test(v)) return "full";
   if (/^(out|jack|coat|blaz|hood)/.test(v)) return "outer";
   if (/^(bot|trou|pant|jean|skirt|short|cargo)/.test(v)) return "bottoms";
   if (/^(top|shirt|tee|t-shirt|blou|sweat|knit)/.test(v)) return "tops";
@@ -1077,7 +1100,7 @@ $("admin-csv-file").addEventListener("change", async (e) => {
     const [title, priceRaw, g, layer, quality, chest, waist, hips, img] = r;
     const price = Number(String(priceRaw || "").replace(/[^\d.]/g, "")), slot = layerToSlot(layer);
     const n = (v) => Math.round(Number(v)) || 0, C = n(chest), W = n(waist), H = n(hips);
-    const ok = title && price > 0 && slot && (slot === "bottoms" ? W > 0 && H > 0 : C > 0);
+    const ok = title && price > 0 && slot && (slot === "bottoms" ? W > 0 && H > 0 : slot === "full" ? C > 0 && W > 0 && H > 0 : C > 0);
     if (!ok) return bad.push(i + 2);
     const gl = String(g || "").toLowerCase(), gender = /^(m|men|male)/.test(gl) ? "m" : /^(f|w|female|wom)/.test(gl) ? "f" : "u";
     const file = (img || "").split(/[\\/]/).pop();
