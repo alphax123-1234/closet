@@ -266,10 +266,15 @@
       <p id="csvMsg" class="mt-2 hidden text-xs" role="status"></p>
     </div>
     <form id="adminForm" class="mt-4 space-y-3 text-sm">
-      <label class="block"><span class="text-neutral-300">Title</span>
-        <input id="aTitle" required maxlength="60" placeholder="e.g. Vintage Denim Jacket" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-gold"></label>
-      <label class="block"><span class="text-neutral-300">Price (UGX)</span>
-        <input id="aPrice" type="number" inputmode="numeric" min="1000" step="500" required placeholder="25000" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-gold"></label>
+      <label class="block"><span class="text-neutral-300">Title <span class="text-xs text-neutral-500">(leave blank to auto-name)</span></span>
+        <input id="aTitle" maxlength="60" placeholder="e.g. Vintage Denim Jacket" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-gold"></label>
+      <div><span class="text-neutral-300">Price (UGX)</span>
+        <div class="mt-1 flex gap-2">
+          <button type="button" id="pMinus" class="rounded-lg border border-neutral-700 px-3 text-sm font-bold text-white hover:bg-neutral-800" aria-label="Decrease price by 5,000">−5k</button>
+          <input id="aPrice" type="number" inputmode="numeric" min="5000" step="5000" required placeholder="25000" aria-describedby="priceHint" class="min-w-0 flex-1 rounded-lg border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-gold">
+          <button type="button" id="pPlus" class="rounded-lg border border-neutral-700 px-3 text-sm font-bold text-white hover:bg-neutral-800" aria-label="Increase price by 5,000">+5k</button>
+        </div>
+        <p id="priceHint" class="mt-1 text-[11px] text-neutral-500">Steps of UGX 5,000 (hold Shift with ↑ ↓ for 10,000). Typed prices snap to the nearest 5,000.</p></div>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <label class="block"><span class="text-neutral-300">Gender model</span>
           <select id="aGender" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option value="f">Female</option><option value="m">Male</option><option value="u">Both</option></select></label>
@@ -282,15 +287,16 @@
         <label class="block"><span class="text-xs text-neutral-300">Garment Chest/Bust (in)</span>
           <input type="number" id="admin-item-chest" min="20" max="70" step="1" placeholder="e.g. 36" class="mt-1 w-full bg-black border border-[#333] p-2 text-white rounded-lg outline-none focus:border-gold disabled:opacity-30"></label>
         <label class="block"><span class="text-xs text-neutral-300">Garment Waist (in)</span>
-          <input type="number" id="admin-item-waist" min="18" max="70" step="1" placeholder="e.g. 30" class="mt-1 w-full bg-black border border-[#333] p-2 text-white rounded-lg outline-none focus:border-gold"></label>
+          <input type="number" id="admin-item-waist" min="18" max="70" step="1" placeholder="e.g. 30" class="mt-1 w-full bg-black border border-[#333] p-2 text-white rounded-lg outline-none focus:border-gold disabled:opacity-30"></label>
         <label class="block"><span class="text-xs text-neutral-300">Garment Hips (in)</span>
-          <input type="number" id="admin-item-hips" min="20" max="70" step="1" placeholder="e.g. 38" class="mt-1 w-full bg-black border border-[#333] p-2 text-white rounded-lg outline-none focus:border-gold"></label>
+          <input type="number" id="admin-item-hips" min="20" max="70" step="1" placeholder="e.g. 38" class="mt-1 w-full bg-black border border-[#333] p-2 text-white rounded-lg outline-none focus:border-gold disabled:opacity-30"></label>
       </div>
-      <p class="-mt-1 text-[11px] text-neutral-500">Tops &amp; jackets need Chest. Bottoms need Waist and Hips (Chest is ignored).</p>
+      <p class="-mt-1 text-[11px] text-neutral-500">Tops &amp; outerwear use Chest only. Bottoms use Waist and Hips only. The unused boxes clear and lock automatically.</p>
       <label class="block"><span class="text-neutral-300">Photo (from your device)</span>
         <input id="aFile" type="file" accept="image/*" required class="mt-1 w-full rounded-lg border border-neutral-700 bg-black p-2 text-neutral-300 file:mr-3 file:rounded-md file:border-0 file:bg-gold file:px-3 file:py-2 file:font-semibold file:text-black"></label>
       <label class="flex items-center gap-2 text-neutral-300"><input id="aRm" type="checkbox" checked class="h-4 w-4 accent-yellow-400"> Remove a plain background (works best on a white or solid backdrop)</label>
       <img id="aPreview" alt="" class="mx-auto hidden max-h-40 rounded-lg bg-neutral-900">
+      <label class="flex items-center gap-2 text-neutral-300"><input id="aLock" type="checkbox" checked class="h-4 w-4 accent-yellow-400"> 🔒 Keep price, gender, layer, quality and sizes for the next item</label>
       <p id="aErr" role="alert" class="hidden text-xs text-red-300"></p>
       <button type="submit" id="aSubmit" class="w-full rounded-lg bg-gold py-3 text-sm font-bold text-black hover:bg-yellow-300 disabled:opacity-50">Add to catalog</button>
     </form>
@@ -964,9 +970,10 @@ function renderUploads() {
 $("aFile").onchange = (e) => { const f = e.target.files[0], im = $("aPreview"); if (f) { im.src = URL.createObjectURL(f); im.classList.remove("hidden"); } else im.classList.add("hidden"); };
 $("adminForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const f = $("aFile").files[0], price = Number($("aPrice").value), title = $("aTitle").value.trim();
+  const f = $("aFile").files[0], price = Number($("aPrice").value); let title = $("aTitle").value.trim();
+  const autoNamed = !title, autoN = nextAutoNum(); if (autoNamed) title = autoTitle(autoN);
   $("aErr").classList.add("hidden");
-  if (!f || !title || !(price > 0)) return;
+  if (!f || !(price > 0)) return;
   $("aSubmit").disabled = true; $("aSubmit").textContent = "Processing…";
   try {
     const photo = await processPhoto(f, $("aRm").checked);
@@ -977,7 +984,11 @@ $("adminForm").addEventListener("submit", async (e) => {
     uploads.push(item); products.unshift(item);
     if (!saveUploads()) toast("Added for this visit only (browser storage is full)");
     else toast(`${title} added to the catalog`);
-    e.target.reset(); $("aPreview").classList.add("hidden");
+    if (autoNamed) try { localStorage.setItem(AUTONAME_KEY, String(autoN)); } catch {}
+    if ($("aLock").checked) {                       // sticky mode: clear only the photo, preview and title
+      $("aFile").value = ""; $("aTitle").value = "";
+      $("aPreview").removeAttribute("src"); $("aPreview").classList.add("hidden");
+    } else { e.target.reset(); $("aPreview").removeAttribute("src"); $("aPreview").classList.add("hidden"); syncSizeInputs(); }
     renderUploads(); renderAll();
   } catch (err) { $("aErr").textContent = err.message || "Something went wrong."; $("aErr").classList.remove("hidden"); }
   $("aSubmit").disabled = false; $("aSubmit").textContent = "Add to catalog";
@@ -991,12 +1002,27 @@ $("uploadList").addEventListener("click", (e) => {
   saveUploads(); renderUploads(); renderAll();
 });
 
-/* ----- layer select: chest is ignored for bottoms ----- */
+/* ----- layer select: auto-clean the measurements that do not apply ----- */
 function syncSizeInputs() {
-  const bottoms = $("aSlot").value === "bottoms";
-  $("admin-item-chest").disabled = bottoms; if (bottoms) $("admin-item-chest").value = "";
+  const bottoms = $("aSlot").value === "bottoms", C = $("admin-item-chest"), W = $("admin-item-waist"), H = $("admin-item-hips");
+  C.disabled = bottoms; W.disabled = H.disabled = !bottoms;
+  if (bottoms) C.value = ""; else { W.value = ""; H.value = ""; }
 }
 $("aSlot").addEventListener("change", syncSizeInputs); syncSizeInputs();
+
+/* ----- auto-numbered titles: "Handpicked Female Bottom #05" ----- */
+const AUTONAME_KEY = "closet_autoname_counter";
+const nextAutoNum = () => { try { return (Number(localStorage.getItem(AUTONAME_KEY)) || 0) + 1; } catch { return 1; } };
+const autoTitle = (n) => `Handpicked ${{ f: "Female", m: "Male", u: "Unisex" }[$("aGender").value]} ${{ outer: "Outerwear", tops: "Top", bottoms: "Bottom" }[$("aSlot").value]} #${String(n).padStart(2, "0")}`;
+
+/* ----- price: UGX 5,000 steps ----- */
+const STEP = 5000, snap = (v) => Math.max(STEP, Math.round(v / STEP) * STEP);
+const bump = (d) => { const v = Number($("aPrice").value) || 0; $("aPrice").value = Math.max(STEP, snap(v) + d); };
+$("pPlus").onclick = () => bump(STEP); $("pMinus").onclick = () => bump(-STEP);
+$("aPrice").addEventListener("change", () => { const v = Number($("aPrice").value); if (v > 0) $("aPrice").value = snap(v); });
+$("aPrice").addEventListener("keydown", (e) => {
+  if (e.shiftKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) { e.preventDefault(); bump(e.key === "ArrowUp" ? 2 * STEP : -2 * STEP); }
+});
 
 /* ----- bulk CSV import ----- */
 function splitCSVLine(line) {                    // handles "quoted, values"
