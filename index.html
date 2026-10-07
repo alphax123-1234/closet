@@ -18,6 +18,8 @@
   @media (min-width: 768px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (min-width: 1280px) { .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
   .card { width: 100%; max-width: 220px; }
+  .speed-btn { border-color:#404040; color:#d4d4d4; background:#000; }
+  .speed-btn[aria-checked="true"] { border-color:#FFC107; color:#FFC107; background:rgba(255,193,7,.1); }
   .hscroll { scroll-snap-type: x mandatory; scrollbar-width: none; }
   .hscroll::-webkit-scrollbar { display: none; }
   .hscroll > * { scroll-snap-align: start; }
@@ -195,6 +197,11 @@
     <div id="deliveryBox" class="mt-4">
       <label for="areaSel" class="text-sm font-semibold text-white">Delivery area (SafeBoda)</label>
       <select id="areaSel" class="mt-1.5 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-sm text-white"></select>
+      <div class="mt-3 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Delivery speed">
+        <button type="button" data-speed="standard" role="radio" class="speed-btn rounded-lg border px-2 py-3 text-sm font-bold">🐢 Standard Delivery</button>
+        <button type="button" data-speed="express" role="radio" class="speed-btn rounded-lg border px-2 py-3 text-sm font-bold">⚡ Priority Express</button>
+      </div>
+      <p id="speedNote" class="mt-2 text-xs leading-relaxed text-neutral-400"></p>
       <p id="deliveryInfo" class="mt-2 text-sm text-neutral-300"></p>
     </div>
     <div id="totals" class="mt-4 space-y-1 border-t border-neutral-800 pt-3 text-sm">
@@ -437,6 +444,24 @@ let metric = false, busy = false, query = "", area = "";
 const zl = (z) => GENDER[gender].zones[z];
 const worn = () => SLOT_ORDER.map((s) => look[s]).filter(Boolean);
 
+/* ===================== PERSISTENT SIZE PROFILE (localStorage) ===================== */
+const PROFILE_KEY = "closet_user_profile";
+function saveProfile() {                       // silent auto-save: no button needed
+  try { localStorage.setItem(PROFILE_KEY, JSON.stringify({ gender, metric, bodies })); } catch {}
+}
+function loadProfile() {                       // returning customer: restore; new visitor: keep defaults
+  try {
+    const d = JSON.parse(localStorage.getItem(PROFILE_KEY) || "null");
+    if (!d || typeof d !== "object") return;
+    for (const g of ["f", "m"]) for (const z of Object.keys(GENDER[g].range)) {
+      const v = Number(d.bodies?.[g]?.[z]), [lo, hi] = GENDER[g].range[z];
+      if (Number.isFinite(v)) bodies[g][z] = Math.min(hi, Math.max(lo, v));
+    }
+    if (d.gender === "f" || d.gender === "m") gender = d.gender;
+    body = bodies[gender]; metric = !!d.metric;
+  } catch {}
+}
+
 /* ===================== SIZE + PROFILE ===================== */
 // [letter, US, max bust/chest, max waist, max hips] in inches. The smallest size that fits all three wins.
 const SIZES = {
@@ -592,7 +617,7 @@ async function tryOn(id) {
   if (busy) return;
   busy = true;
   const p = products.find((x) => x.id === id);
-  if (p.for && p.for !== "u" && p.for !== gender) { gender = p.for; body = bodies[gender]; renderSliders(); }   // match the mannequin to the piece
+  if (p.for && p.for !== "u" && p.for !== gender) { gender = p.for; body = bodies[gender]; renderSliders(); saveProfile(); }   // match the mannequin to the piece
   document.querySelectorAll(".try-btn").forEach((b) => (b.disabled = true));
   $("overlay").classList.remove("opacity-0");
   await sleep(700);
@@ -621,18 +646,34 @@ function buyOutfit() {
   openCart();
 }
 
-/* ----- SafeBoda delivery calculator (PLACEHOLDER fares/times: replace with your real rates) ----- */
-const AREAS = {
-  Makerere: { fare: 5000, mins: 60 },   Wandegeya: { fare: 5000, mins: 60 }, Kololo: { fare: 6000, mins: 60 },
-  Ntinda: { fare: 8000, mins: 75 },     Bugolobi: { fare: 8000, mins: 75 },  Nakawa: { fare: 8000, mins: 80 },
-  Kabalagala: { fare: 9000, mins: 90 }, Muyenga: { fare: 10000, mins: 90 },  Kansanga: { fare: 10000, mins: 95 },
-  Kireka: { fare: 12000, mins: 110 },   Entebbe: { fare: 25000, mins: 150 },
+/* ----- SafeBoda distance-based delivery fees (zones by distance from Kampala Central) ----- */
+const DELIVERY_ZONES = {
+  1: { std: 4000,  exp: 7000,  areas: ["Wandegeya", "Nakasero", "Kamwokya", "Kololo", "Kampala Central"] },
+  2: { std: 6000,  exp: 10000, areas: ["Ntinda", "Bukoto", "Bugolobi", "Kansanga", "Makerere", "Rubaga"] },
+  3: { std: 8000,  exp: 13000, areas: ["Kira", "Kasangati", "Namugongo", "Munyonyo", "Kisaasi"] },
+  4: { std: 15000, exp: 25000, areas: ["Entebbe", "Mukono", "Wakiso Town"] },
 };
-$("areaSel").innerHTML = '<option value="">Choose your area…</option>' + Object.entries(AREAS).map(([n, a]) => `<option value="${n}">${n} (${ugx(a.fare)})</option>`).join("");
+const AREAS = {};                                      // area name -> zone record
+Object.values(DELIVERY_ZONES).forEach((z) => z.areas.forEach((n) => (AREAS[n] = z)));
+let speed = "standard";
+const feeFor = (n) => (AREAS[n] ? (speed === "express" ? AREAS[n].exp : AREAS[n].std) : 0);
+function fillAreas() {                                 // dropdown shows the fare for the active speed
+  $("areaSel").innerHTML = '<option value="">Choose your area…</option>' + Object.keys(AREAS).map((n) => `<option value="${n}">${n} (${ugx(feeFor(n))})</option>`).join("");
+  $("areaSel").value = area;
+}
+fillAreas();
+const SPEED_NOTE = {
+  standard: "Reliable same-day service. Orders are processed sequentially and delivered directly to your doorstep today.",
+  express:  "🔥 VIP Direct Dispatch. Your package bypasses the standard queue for immediate fulfillment. A dedicated priority rider is assigned to bring your order straight to you with zero delays.",
+};
 const hrs = (m) => (m >= 60 ? Math.floor(m / 60) + " hr " : "") + (m % 60 ? (m % 60) + " min" : "");
 
+// Delivery order message: speed, items, total, drop-off, fee and the shopper's measurements
+const waDelivery = (names, total, fee) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+  `${speed === "express" ? "EXPRESS" : "STANDARD"} DELIVERY order for: ${names} at UGX ${total.toLocaleString("en-UG")}. Drop-off Location: ${area || "not chosen yet"} (Delivery Fee: UGX ${fee.toLocaleString("en-UG")}). My measurements are Chest: ${half(body.bust)}in, Waist: ${half(body.waist)}in, Hips: ${half(body.hips)}in.`)}`;
 function renderCart() {
   const has = cart.length > 0, sub = cart.reduce((s, c) => s + c.price, 0), A = AREAS[area];
+  fillAreas();
   $("orderItems").innerHTML = has ? cart.map((c, i) => `<li class="flex items-start justify-between gap-3 py-2"><span class="min-w-0">${c.name}</span>
       <span class="flex shrink-0 items-center gap-1">${ugx(c.price)}<button data-cart-rm="${i}" aria-label="Remove ${c.name}" class="px-2 py-1 text-neutral-500 hover:text-white">✕</button></span></li>`).join("")
     : '<li class="py-2 text-neutral-500">Your cart is empty. Add a piece or tap Buy Outfit.</li>';
@@ -640,12 +681,16 @@ function renderCart() {
   $("orderWarn").classList.toggle("hidden", !tight.length);
   $("orderWarn").textContent = tight.length ? "Heads up: " + tight.join(" and ") + " may be tight on your measurements." : "";
   $("deliveryBox").classList.toggle("hidden", !has); $("totals").classList.toggle("hidden", !has); $("whatsappLink").classList.toggle("hidden", !has);
+  const fee = feeFor(area);
+  document.querySelectorAll("[data-speed]").forEach((x) => x.setAttribute("aria-checked", x.dataset.speed === speed));
+  $("speedNote").textContent = SPEED_NOTE[speed];
   if (A) {
-    const arrive = new Date(Date.now() + A.mins * 60000).toLocaleTimeString("en-UG", { hour: "numeric", minute: "2-digit" });
-    $("deliveryInfo").innerHTML = `Fare <b class="text-white">${ugx(A.fare)}</b> · arrives around <b class="text-white">${arrive}</b> (about ${hrs(A.mins)})`;
+    $("deliveryInfo").innerHTML = `Fare <b class="text-white">${ugx(fee)}</b> · ` + (speed === "express"
+      ? '<b class="text-gold">⚡ Estimated Arrival: Within 45–90 minutes (Priority Dispatch)</b>'
+      : "Estimated Arrival: Today (Standard Route)");
   } else $("deliveryInfo").textContent = "Pick your area to see the fare and arrival time.";
-  $("tItems").textContent = ugx(sub); $("tDelivery").textContent = A ? ugx(A.fare) : "Choose area"; $("tTotal").textContent = ugx(sub + (A ? A.fare : 0));
-  $("whatsappLink").href = has ? waLink(cart.map((c) => c.name).join(" + "), sub) : "#";
+  $("tItems").textContent = ugx(sub); $("tDelivery").textContent = A ? ugx(fee) : "Choose area"; $("tTotal").textContent = ugx(sub + fee);
+  $("whatsappLink").href = has ? waDelivery(cart.map((c) => c.name).join(" + "), sub + fee, fee) : "#";
 }
 function openCart() { renderCart(); $("orderDialog").showModal(); }
 
@@ -655,20 +700,21 @@ $("grid").addEventListener("click", (e) => {
   if (t) tryOn(Number(t.dataset.try)); else if (a) addToCart(Number(a.dataset.add));
 });
 $("fitList").addEventListener("click", (e) => { const b = e.target.closest("[data-layer]"); if (b) { look[b.dataset.layer] = null; renderAll(); } });
-document.querySelectorAll("[data-g]").forEach((b) => b.onclick = () => { gender = b.dataset.g; body = bodies[gender]; renderSliders(); renderAll(); });
+document.querySelectorAll("[data-g]").forEach((b) => b.onclick = () => { gender = b.dataset.g; body = bodies[gender]; renderSliders(); renderAll(); saveProfile(); });
 $("sliders").addEventListener("input", (e) => {
   const z = e.target.dataset.z; if (!z) return;
   body[z] = metric ? Number(e.target.value) / 2.54 : Number(e.target.value);
   $("v-" + z).textContent = show(body[z]);
-  drawMannequin(); renderResults(); renderProducts();      // fit colours update live while sliding
+  saveProfile(); drawMannequin(); renderResults(); renderProducts();      // fit colours update live while sliding
 });
-$("uIn").onclick = () => { metric = false; renderSliders(); renderProducts(); };
-$("uCm").onclick = () => { metric = true; renderSliders(); renderProducts(); };
+$("uIn").onclick = () => { metric = false; renderSliders(); renderProducts(); saveProfile(); };
+$("uCm").onclick = () => { metric = true; renderSliders(); renderProducts(); saveProfile(); };
 $("resetBtn").onclick = () => { if (busy) return; look.bottoms = look.tops = look.outer = null; renderAll(); };   // clears every clothing layer
 $("buyBtn").onclick = buyOutfit;
 $("cartBtn").onclick = openCart;
 $("waOutfit").addEventListener("click", (e) => { if (!worn().length) { e.preventDefault(); toast("Try on an item first"); } });
 $("areaSel").onchange = (e) => { area = e.target.value; renderCart(); };
+document.querySelectorAll("[data-speed]").forEach((b) => b.onclick = () => { speed = b.dataset.speed; renderCart(); });
 $("orderItems").addEventListener("click", (e) => { const b = e.target.closest("[data-cart-rm]"); if (b) { cart.splice(Number(b.dataset.cartRm), 1); updateBadge(); renderProducts(); renderCart(); } });
 $("closeDialog").onclick = () => $("orderDialog").close();
 
@@ -767,7 +813,7 @@ $("uploadList").addEventListener("click", (e) => {
 });
 
 /* ===================== START ===================== */
-loadUploads(); renderHero(); renderSliders(); renderAll(); updateBadge(); showView(location.hash.slice(1));
+loadUploads(); loadProfile(); renderHero(); renderSliders(); renderAll(); updateBadge(); showView(location.hash.slice(1));
 </script>
 </body>
 </html>
