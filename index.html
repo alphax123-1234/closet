@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CLOSET | Kampala's Best Hand-Picked Thrift Deals</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config = { theme: { extend: { colors: { gold: "#FFC107", card: "#121212" } } } };</script>
 <style>
@@ -18,6 +20,9 @@
   @media (min-width: 768px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (min-width: 1280px) { .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
   .card { width: 100%; max-width: 220px; }
+  #delivery-map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.95) contrast(.9); }
+  #delivery-map { position: relative; z-index: 10; }
+  .pin-icon { font-size: 28px; line-height: 28px; filter: drop-shadow(0 2px 2px #000); }
   .speed-btn { border-color:#404040; color:#d4d4d4; background:#000; }
   .speed-btn[aria-checked="true"] { border-color:#FFC107; color:#FFC107; background:rgba(255,193,7,.1); }
   .hscroll { scroll-snap-type: x mandatory; scrollbar-width: none; }
@@ -127,6 +132,7 @@
         </div>
         <div class="relative mx-auto mt-3 h-[40dvh] overflow-hidden rounded-2xl bg-black md:h-[44dvh]">
           <svg id="mSvg" viewBox="0 0 300 420" class="h-full w-full" role="img" aria-label="Mannequin showing garment fit"></svg>
+          <div id="soldMsg" class="pointer-events-none absolute inset-x-2 top-1/3 z-20 hidden rounded-xl bg-black/90 p-3 text-center text-sm font-semibold text-gold ring-1 ring-gold/40" role="alert"></div>
           <div id="overlay" class="pointer-events-none absolute inset-0 overflow-hidden rounded-xl bg-black/50 opacity-0 backdrop-blur-sm transition-opacity duration-200" role="status">
             <div class="shimmer-bar absolute inset-y-0 w-2/3 bg-gradient-to-r from-transparent via-white/25 to-transparent"></div>
             <p class="absolute bottom-12 left-2 right-2 text-center text-sm font-medium text-white">Adding layer…</p>
@@ -195,8 +201,15 @@
     <ul id="orderItems" class="mt-3 divide-y divide-neutral-800 text-sm"></ul>
     <p id="orderWarn" class="mt-3 hidden rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-300 ring-1 ring-red-500/30"></p>
     <div id="deliveryBox" class="mt-4">
-      <label for="areaSel" class="text-sm font-semibold text-white">Delivery area (SafeBoda)</label>
-      <select id="areaSel" class="mt-1.5 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-sm text-white"></select>
+      <p id="holdClock" class="mb-3 rounded-lg bg-gold/10 px-3 py-2 text-center text-sm font-bold text-gold ring-1 ring-gold/30" role="timer"></p>
+      <p class="text-sm font-semibold text-white">Where should the rider go? (SafeBoda)</p>
+      <div class="mt-1.5 flex gap-2">
+        <input id="placeQ" type="search" autocomplete="off" placeholder="🔍 Type your exact local landmark, building, or street name..." class="min-w-0 flex-1 rounded-lg border border-neutral-700 bg-black px-3 py-3 text-sm text-white outline-none focus:border-gold">
+        <button id="placeGo" type="button" class="rounded-lg bg-neutral-800 px-3 text-sm font-bold text-white hover:bg-neutral-700" aria-label="Search place">Find</button>
+      </div>
+      <button id="gpsBtn" type="button" class="mt-2 w-full rounded-lg bg-gold py-3 text-sm font-bold text-black hover:bg-yellow-300">🎯 Pin My Current Location</button>
+      <div id="delivery-map" class="w-full h-48 bg-[#1a1a1a] rounded-md border border-[#222] my-3 z-10"></div>
+      <p id="dropName" class="text-xs text-neutral-400">Tap the map, drag the pin, search a landmark or use GPS to set your drop-off spot.</p>
       <div class="mt-3 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Delivery speed">
         <button type="button" data-speed="standard" role="radio" class="speed-btn rounded-lg border px-2 py-3 text-sm font-bold">🐢 Standard Delivery</button>
         <button type="button" data-speed="express" role="radio" class="speed-btn rounded-lg border px-2 py-3 text-sm font-bold">⚡ Priority Express</button>
@@ -242,6 +255,16 @@
   <div class="max-h-[90dvh] overflow-y-auto p-5">
     <h2 class="text-lg font-semibold text-white">⚙️ Test Admin Control Panel</h2>
     <p class="mt-1 text-xs text-neutral-500">Items you add here are saved in this browser only, so you can test them on the mannequin.</p>
+    <div class="mt-4 rounded-xl border border-neutral-800 bg-black p-3">
+      <h3 class="text-sm font-semibold text-white">Bulk Spreadsheet Import (CSV)</h3>
+      <p class="mt-1 text-[11px] leading-relaxed text-neutral-500">Columns: Title, Price, Gender, Layer, Quality, Chest, Waist, Hips, ImageFileName. Images load from <code>assets/products/</code> in your repository.</p>
+      <div class="mt-2 grid grid-cols-2 gap-2">
+        <label for="admin-csv-file" class="cursor-pointer rounded-lg bg-gold py-3 text-center text-sm font-bold text-black hover:bg-yellow-300">Choose CSV File</label>
+        <button type="button" id="csvTemplate" class="rounded-lg border border-neutral-600 py-3 text-sm font-semibold text-white hover:bg-neutral-800">Download template</button>
+      </div>
+      <input type="file" id="admin-csv-file" accept=".csv" class="hidden">
+      <p id="csvMsg" class="mt-2 hidden text-xs" role="status"></p>
+    </div>
     <form id="adminForm" class="mt-4 space-y-3 text-sm">
       <label class="block"><span class="text-neutral-300">Title</span>
         <input id="aTitle" required maxlength="60" placeholder="e.g. Vintage Denim Jacket" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-gold"></label>
@@ -255,6 +278,15 @@
         <label class="block"><span class="text-neutral-300">Quality rating</span>
           <select id="aCond" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option>Like New</option><option>Gently Loved</option><option>Good Condition</option></select></label>
       </div>
+      <div class="grid grid-cols-3 gap-2">
+        <label class="block"><span class="text-xs text-neutral-300">Garment Chest/Bust (in)</span>
+          <input type="number" id="admin-item-chest" min="20" max="70" step="1" placeholder="e.g. 36" class="mt-1 w-full bg-black border border-[#333] p-2 text-white rounded-lg outline-none focus:border-gold disabled:opacity-30"></label>
+        <label class="block"><span class="text-xs text-neutral-300">Garment Waist (in)</span>
+          <input type="number" id="admin-item-waist" min="18" max="70" step="1" placeholder="e.g. 30" class="mt-1 w-full bg-black border border-[#333] p-2 text-white rounded-lg outline-none focus:border-gold"></label>
+        <label class="block"><span class="text-xs text-neutral-300">Garment Hips (in)</span>
+          <input type="number" id="admin-item-hips" min="20" max="70" step="1" placeholder="e.g. 38" class="mt-1 w-full bg-black border border-[#333] p-2 text-white rounded-lg outline-none focus:border-gold"></label>
+      </div>
+      <p class="-mt-1 text-[11px] text-neutral-500">Tops &amp; jackets need Chest. Bottoms need Waist and Hips (Chest is ignored).</p>
       <label class="block"><span class="text-neutral-300">Photo (from your device)</span>
         <input id="aFile" type="file" accept="image/*" required class="mt-1 w-full rounded-lg border border-neutral-700 bg-black p-2 text-neutral-300 file:mr-3 file:rounded-md file:border-0 file:bg-gold file:px-3 file:py-2 file:font-semibold file:text-black"></label>
       <label class="flex items-center gap-2 text-neutral-300"><input id="aRm" type="checkbox" checked class="h-4 w-4 accent-yellow-400"> Remove a plain background (works best on a white or solid backdrop)</label>
@@ -265,6 +297,11 @@
     <div class="mt-5 border-t border-neutral-800 pt-3">
       <h3 class="text-sm font-semibold text-white">Uploaded items</h3>
       <ul id="uploadList" class="mt-2 space-y-2 text-sm"></ul>
+    </div>
+    <div class="mt-5 border-t border-neutral-800 pt-3">
+      <h3 class="text-sm font-semibold text-white">⚙️ Sold Inventory Backlog Archive</h3>
+      <ul id="soldList" class="mt-2 space-y-2 text-sm"></ul>
+      <button id="flushSold" type="button" class="mt-3 w-full rounded-lg bg-red-500 py-3 text-sm font-bold text-white hover:bg-red-400">Flush Sold Backlog</button>
     </div>
     <button id="adminClose" class="mt-4 w-full rounded-lg border border-neutral-600 py-3 text-sm font-semibold hover:bg-neutral-800">Close</button>
   </div>
@@ -295,7 +332,7 @@ const HELP = {
   center:   ["Help Center", ["Every piece on CLOSET is hand-picked, quality-checked, owned and delivered by us.", "Each card shows the item's condition and its measurements so you can check the fit before you buy.", "Stuck? Tap the green button to chat with us on WhatsApp."]],
   order:    ["Place an Order", ["1. Browse the Fashion page and tap Try On to see a piece on the mannequin.", "2. Enter your measurements so the colours show how it fits.", "3. Tap Add to Cart, or Buy Outfit for everything on the mannequin.", "4. Pick your delivery area and tap Order via WhatsApp."]],
   pay:      ["Payments Options", ["Cash on Delivery: pay the rider when your parcel arrives.", "Mobile Money: MTN or Airtel Money, confirmed with us on WhatsApp."]],
-  delivery: ["Delivery Timelines", ["We deliver within Kampala and Entebbe via SafeBoda.", "Choose your area at checkout to see the delivery fare and an estimated arrival time. Most orders arrive within a few hours."]],
+  delivery: ["Delivery Timelines", ["We deliver within Kampala and Entebbe via SafeBoda.", "Drop a pin on the map at checkout to see your delivery fare (by distance) and estimated arrival. Most orders arrive within a few hours."]],
 };
 const helpWa = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello CLOSET, I need help")}`;
 $("helpWaLink").href = helpWa; $("helpWa2").href = helpWa;
@@ -396,7 +433,7 @@ $("hero").addEventListener("touchend", (e) => { const dx = e.changedTouches[0].c
 const promos = [
   { art: tileNew,    img: "images/tile-new.jpg",      tag: "First Camera Selections", title: "NEW ARRIVALS",                          text: "Fresh finds, photographed first and picked by us." },
   { art: tileBasics, img: "images/tile-basics.jpg",   tag: "Wear them every day",     title: "EVERYDAY WARDROBE BASICS",             text: "Tees, jeans and shirts that go with everything." },
-  { art: tileBoda,   img: "images/tile-delivery.jpg", tag: "Kampala & Entebbe",       title: "INSTANT KAMPALA DELIVERY • NO WAITING", text: "Pick your area at checkout to see your fare and arrival time." },
+  { art: tileBoda,   img: "images/tile-delivery.jpg", tag: "Kampala & Entebbe",       title: "INSTANT KAMPALA DELIVERY • NO WAITING", text: "Drop a pin at checkout to see your fare and arrival time." },
 ];
 $("promos").innerHTML = promos.map((p) => `
   <a href="#fashion" class="group relative flex h-44 flex-col justify-end overflow-hidden rounded-2xl bg-card p-4 transition duration-300 hover:-translate-y-1 hover:border-gold hover:shadow-xl md:h-72 md:p-6">
@@ -496,14 +533,18 @@ const FIT = {
   loose: { label: "Loose",        fill: "rgba(76,175,80,.50)", chip: "bg-green-500/20 text-green-300",   dot: "bg-green-500" },
 };
 const worst = (arr) => arr.reduce((a, b) => (RANK[b] < RANK[a] ? b : a));
-function itemFit(it) {
+function checkFitLogic(it) {
+  // Rule A (Top / Outerwear): compare ONLY the garment chest with the Chest slider.
+  // Rule B (Bottom): ignore chest completely; compare ONLY waist and hips with the Waist and Hips sliders.
+  const zones = it.slot === "bottoms" ? ["waist", "hips"] : ["bust"];
   const bulk = it.slot === "outer" && look.tops ? LAYER_BULK : 0;
-  return Object.fromEntries(ZONES[it.slot].map((z) => {
+  return Object.fromEntries(zones.filter((z) => it.size && it.size[z] > 0).map((z) => {
     const ease = (it.size[z] * (1 + it.stretch) - (z === "bust" ? bulk : 0) - body[z]) / body[z];
     return [z, ease < T_TIGHT ? "tight" : ease >= T_LOOSE ? "loose" : "true"];
   }));
 }
-const itemOverall = (it) => worst(Object.values(itemFit(it)));
+const itemFit = checkFitLogic;
+const itemOverall = (it) => { const v = Object.values(checkFitLogic(it)); return v.length ? worst(v) : "true"; };
 
 /* ===================== MANNEQUIN DRAWING ===================== */
 const CX = 150, K = 2.33, hw = (inches) => (inches * K) / 2;
@@ -540,14 +581,14 @@ function drawMannequin() {
   const band = (y, hg, k) => k ? `<rect x="0" y="${y}" width="300" height="${hg}" fill="${FIT[k].fill}"/>` : "";
   const bands = (id, d, rects) => `<clipPath id="${id}"><path d="${d}"/></clipPath><g clip-path="url(#${id})">${rects}</g>`;
   if (look.bottoms) { const it = look.bottoms, d = bottomPath(it), f = itemFit(it);       // bottoms: waist + hips colours
-    s += (it.photo ? photoLayer(it) : `<path d="${d}" fill="${it.fill}" ${lineC}/>`) + bands("cb", d, band(140, 70, f.waist) + band(210, 200, f.hips)); }
+    s += (it.photo ? photoLayer(it) : `<path d="${d}" fill="${it.fill}" ${lineC}/>`) + bands("cb", d, band(170, 44, f.waist) + band(214, 196, f.hips)); }
   if (look.tops) { const it = look.tops, r = upperGarment(it, 208, 2);                     // tops: chest/bust colour
-    s += (it.photo ? photoLayer(it) : r.svg) + bands("ct", r.d, band(80, 170, itemFit(it).bust)); }
+    s += (it.photo ? photoLayer(it) : r.svg) + bands("ct", r.d, band(84, 94, itemFit(it).bust)); }
   if (look.outer) {                                                                       // jackets: chest/bust colour, hanging open over the top
     const it = look.outer, r = upperGarment(it, 224, 7);
     s += it.photo ? photoLayer(it) : r.svg;
     if (!it.photo) s += `<clipPath id="oc"><path d="${r.d}"/></clipPath><g clip-path="url(#oc)"><rect x="${c - 8}" y="92" width="16" height="140" fill="${look.tops ? look.tops.fill : "#1b1b1b"}"/></g><path d="M${c - 8} 94 L${c - 8} 224 M${c + 8} 94 L${c + 8} 224" stroke="rgba(255,255,255,.4)" stroke-width="1"/>`;
-    s += bands("co", r.d, band(80, 170, itemFit(it).bust)); }
+    s += bands("co", r.d, band(84, 94, itemFit(it).bust)); }
   $("mSvg").innerHTML = s;
 }
 
@@ -586,13 +627,14 @@ function renderResults() {
 
 function renderProducts() {
   const q = query.trim().toLowerCase();
-  const list = products.filter((p) => !q || (p.title + " " + p.slot).toLowerCase().includes(q));
+  const list = products.filter((p) => p.status !== "sold" && (!q || (p.title + " " + p.slot).toLowerCase().includes(q)));
   $("empty").classList.toggle("hidden", list.length > 0);
   const lab = { bust: "Chest", waist: "Waist", hips: "Hips" };
-  const sz = (p) => ZONES[p.slot].map((z) => `${lab[z]} ${metric ? cm(p.size[z]) : p.size[z]}`).join(" · ") + (metric ? " cm" : " in");
+  const dim = (v) => (metric ? cm(v) + " cm" : v + " in");
+  const sz = (p) => (p.slot === "bottoms" ? `Waist: ${dim(p.size.waist)} • Hips: ${dim(p.size.hips)}` : `Chest: ${dim(p.size.bust)}`);
   $("grid").innerHTML = list.map((p) => {
     const f = itemOverall(p), on = look[p.slot] && look[p.slot].id === p.id, inC = inCart(p.id);
-    return `<article class="card group flex flex-col rounded-lg p-1.5 transition hover:bg-card ${on ? "ring-1 ring-gold" : ""}">
+    return `<article data-card="${p.id}" class="card group flex flex-col rounded-lg p-1.5 transition duration-500 hover:bg-card ${on ? "ring-1 ring-gold" : ""}">
       <div class="relative flex h-40 items-center justify-center overflow-hidden rounded-md bg-[#161616] p-3 md:h-44">
         ${p.photo ? `<img src="${p.photo}" alt="${p.title}" class="h-full w-full object-contain">`
                   : `<svg viewBox="${SHAPES[p.shape].vb}" class="h-full w-full" aria-hidden="true"><path d="${SHAPES[p.shape].d}" fill="${p.fill}" stroke="rgba(255,255,255,.35)"/></svg>`}
@@ -601,16 +643,32 @@ function renderProducts() {
       <div class="mt-2 flex flex-1 flex-col gap-0.5">
         <h3 class="truncate text-xs text-neutral-200">${p.title}</h3>
         <p class="text-sm font-bold text-white">${ugx(p.price)}</p>
-        <p class="text-[10px] text-neutral-500">${p.cond} · ${sz(p)}</p>
+        <p class="text-[10px] text-neutral-500">${p.cond} • ${sz(p)}</p>
         <p class="flex items-center gap-1 text-[10px] text-neutral-400"><i class="inline-block h-2 w-2 rounded-full ${FIT[f].dot}"></i>${FIT[f].label} on you</p>
         <div class="mt-auto grid grid-cols-2 gap-1.5 pt-1.5">
           <button data-try="${p.id}" class="try-btn rounded-md bg-gold px-1 py-2 text-[11px] font-bold text-black hover:bg-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white disabled:opacity-50">${on ? "On ✓" : "Try On"}</button>
-          <button data-add="${p.id}" ${inC ? "disabled" : ""} class="rounded-md border border-neutral-600 px-1 py-2 text-[11px] font-bold text-white hover:bg-neutral-800 disabled:opacity-50">${inC ? "In Cart ✓" : "Add"}</button>
+          <button data-add="${p.id}" ${inC || p.status !== "available" ? "disabled" : ""} class="rounded-md border px-1 py-2 text-[10px] font-bold leading-tight disabled:opacity-80 ${p.status === "cart_hold" && !inC ? "border-orange-500/60 text-orange-300" : "border-neutral-600 text-white hover:bg-neutral-800"}">${inC ? "In Cart ✓" : p.status === "cart_hold" ? "⚠️ Held in a Cart" : "Add"}</button>
         </div>
       </div></article>`;
   }).join("");
 }
-const renderAll = () => { drawMannequin(); renderResults(); renderProducts(); };
+const renderAll = () => { drawMannequin(); renderResults(); renderProducts(); checkMannequinSold(); };
+
+/* Mannequin eviction: if a worn garment becomes 'sold', warn and fade it away */
+let evicting = false;
+function checkMannequinSold() {
+  if (evicting) return;
+  const gone = SLOT_ORDER.filter((sl) => look[sl] && look[sl].status === "sold");
+  if (!gone.length) return;
+  evicting = true;
+  const m = $("soldMsg"); m.textContent = "This unique vintage piece was just purchased by another shopper! Clearing mannequin..."; m.classList.remove("hidden");
+  $("mSvg").classList.add("transition-opacity", "duration-1000", "opacity-20");
+  setTimeout(() => {
+    gone.forEach((sl) => (look[sl] = null));
+    m.classList.add("hidden"); $("mSvg").classList.remove("opacity-20", "transition-opacity", "duration-1000");
+    evicting = false; renderAll();
+  }, 2400);
+}
 
 /* ===================== TRY ON (adds a layer) ===================== */
 async function tryOn(id) {
@@ -631,49 +689,138 @@ async function tryOn(id) {
 const cart = [];   // { name, price, ids: [product ids] }
 const inCart = (id) => cart.some((c) => c.ids.includes(id));
 const updateBadge = () => { $("cartCount").textContent = cart.length; };
+const HOLD_MS = 10 * 60 * 1000;                  // an item is held for 10 minutes once it is in a cart
+function releaseEntry(entry) {                   // hold ended (removed or expired): item is public again
+  entry.ids.forEach((id) => { const p = products.find((x) => x.id === id); if (p && p.status === "cart_hold") p.status = "available"; });
+}
 function addToCart(id) {
   const p = products.find((x) => x.id === id);
   if (inCart(id)) return toast("Already in your cart. Only 1 left!");
-  cart.push({ name: p.title, price: p.price, ids: [id] });
-  updateBadge(); renderProducts(); toast(`${p.title} added to cart`);
+  if (p.status !== "available") return toast("Sorry, that piece is currently held in a cart.");
+  cart.push({ name: p.title, price: p.price, ids: [id], expires: Date.now() + HOLD_MS });
+  p.status = "cart_hold";
+  updateBadge(); renderProducts(); toast(`${p.title} added to cart (held for 10 minutes)`);
 }
 function buyOutfit() {
-  const fresh = worn().filter((p) => !inCart(p.id));
+  const fresh = worn().filter((p) => p.status === "available");
   if (fresh.length) {
-    cart.push({ name: fresh.map((p) => p.title).join(" + "), price: fresh.reduce((t, p) => t + p.price, 0), ids: fresh.map((p) => p.id) });
+    cart.push({ name: fresh.map((p) => p.title).join(" + "), price: fresh.reduce((t, p) => t + p.price, 0), ids: fresh.map((p) => p.id), expires: Date.now() + HOLD_MS });
+    fresh.forEach((p) => (p.status = "cart_hold"));
     updateBadge(); renderProducts();
-  } else toast("Those pieces are already in your cart");
+  } else toast("Those pieces are already in a cart");
   openCart();
 }
-
-/* ----- SafeBoda distance-based delivery fees (zones by distance from Kampala Central) ----- */
-const DELIVERY_ZONES = {
-  1: { std: 4000,  exp: 7000,  areas: ["Wandegeya", "Nakasero", "Kamwokya", "Kololo", "Kampala Central"] },
-  2: { std: 6000,  exp: 10000, areas: ["Ntinda", "Bukoto", "Bugolobi", "Kansanga", "Makerere", "Rubaga"] },
-  3: { std: 8000,  exp: 13000, areas: ["Kira", "Kasangati", "Namugongo", "Munyonyo", "Kisaasi"] },
-  4: { std: 15000, exp: 25000, areas: ["Entebbe", "Mukono", "Wakiso Town"] },
-};
-const AREAS = {};                                      // area name -> zone record
-Object.values(DELIVERY_ZONES).forEach((z) => z.areas.forEach((n) => (AREAS[n] = z)));
-let speed = "standard";
-const feeFor = (n) => (AREAS[n] ? (speed === "express" ? AREAS[n].exp : AREAS[n].std) : 0);
-function fillAreas() {                                 // dropdown shows the fare for the active speed
-  $("areaSel").innerHTML = '<option value="">Choose your area…</option>' + Object.keys(AREAS).map((n) => `<option value="${n}">${n} (${ugx(feeFor(n))})</option>`).join("");
-  $("areaSel").value = area;
+function updateHoldClock() {
+  const el = $("holdClock"); if (!el || !cart.length) return;
+  const left = Math.max(0, Math.min(...cart.map((c) => c.expires)) - Date.now()), z = (n) => String(n).padStart(2, "0");
+  el.textContent = `⏳ Held for you: ${z(Math.floor(left / 60000))}m : ${z(Math.floor(left % 60000 / 1000))}s`;
 }
-fillAreas();
+function tickHolds() {                           // runs every second, even with the cart closed
+  const now = Date.now(); let n = 0;
+  for (let i = cart.length - 1; i >= 0; i--) if (cart[i].expires <= now) { releaseEntry(cart[i]); cart.splice(i, 1); n++; }
+  if (n) { updateBadge(); renderProducts(); toast("Your 10-minute hold ended. The piece is available again."); if ($("orderDialog").open) renderCart(); }
+  updateHoldClock();
+}
+
+/* ----- Sold inventory (simulated, local to this browser) ----- */
+const SOLD_KEY = "closet_sold_archive_v1";
+let soldArchive = [];
+function saveSold() { try { localStorage.setItem(SOLD_KEY, JSON.stringify(soldArchive)); } catch {} }
+function loadSold() {                            // statuses are rebuilt each visit: sold stays sold, holds never survive a reload
+  try { soldArchive = JSON.parse(localStorage.getItem(SOLD_KEY) || "[]"); } catch { soldArchive = []; }
+  const ids = new Set(soldArchive.map((r) => r.id));
+  products.forEach((p) => (p.status = ids.has(p.id) ? "sold" : "available"));
+}
+function renderSoldList() {
+  $("soldList").innerHTML = soldArchive.length ? soldArchive.slice().reverse().map((r) => `<li class="rounded-lg bg-black p-2">
+    <b class="block truncate text-white">${r.title}</b>
+    <span class="block text-xs text-neutral-400">${ugx(r.price)} · ${r.speed} · ${new Date(r.soldAt).toLocaleString("en-UG")}</span>
+    <span class="block text-xs text-neutral-500">Drop-off: ${r.dropName} (${r.km} km, fee ${ugx(r.fee)})${r.lat != null ? ` · <a class="text-gold underline" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${r.lat},${r.lng}">GPS pin</a>` : ""}</span></li>`).join("")
+    : '<li class="text-neutral-500">No sold items yet.</li>';
+}
+$("flushSold").onclick = () => {
+  if (!soldArchive.length) return toast("Nothing to flush");
+  if (!confirm("Clear all sold items from this browser's memory?")) return;
+  const ids = new Set(soldArchive.map((r) => r.id));
+  for (let i = products.length - 1; i >= 0; i--) if (ids.has(products[i].id)) products.splice(i, 1);
+  uploads = uploads.filter((u) => !ids.has(u.id));
+  soldArchive = []; saveSold(); saveUploads(); renderSoldList(); renderUploads(); renderAll(); toast("Sold backlog flushed");
+};
+
+/* ----- Map + distance-based delivery (Leaflet / OpenStreetMap / Nominatim) ----- */
+const HUB = { lat: 0.3345, lng: 32.5680, name: "CLOSET Hub (Wandegeya)" };   // PLACEHOLDER: set your real shop coordinates
+const KM_RATE = 1500, MIN_STANDARD = 3500, EXPRESS_SURCHARGE = 5000;
+let map = null, marker = null, drop = null, speed = "standard";               // drop = { lat, lng, name, km }
+const haversineKm = (la1, lo1, la2, lo2) => {
+  const R = 6371, r = (d) => (d * Math.PI) / 180, dLa = r(la2 - la1), dLo = r(lo2 - lo1);
+  const a = Math.sin(dLa / 2) ** 2 + Math.cos(r(la1)) * Math.cos(r(la2)) * Math.sin(dLo / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+};
+const feeFor = () => {
+  if (!drop) return 0;
+  const base = Math.round((drop.km * KM_RATE) / 100) * 100;
+  return speed === "express" ? base + EXPRESS_SURCHARGE : Math.max(MIN_STANDARD, base);
+};
 const SPEED_NOTE = {
   standard: "Reliable same-day service. Orders are processed sequentially and delivered directly to your doorstep today.",
-  express:  "🔥 VIP Direct Dispatch. Your package bypasses the standard queue for immediate fulfillment. A dedicated priority rider is assigned to bring your order straight to you with zero delays.",
+  express:  "🔥 VIP Direct Dispatch. A dedicated priority rider is assigned to bring your order straight to you with zero delays.",
 };
-const hrs = (m) => (m >= 60 ? Math.floor(m / 60) + " hr " : "") + (m % 60 ? (m % 60) + " min" : "");
+function setDrop(lat, lng, name) {
+  drop = { lat, lng, km: haversineKm(HUB.lat, HUB.lng, lat, lng), name: name || `Pinned spot (${lat.toFixed(5)}, ${lng.toFixed(5)})` };
+  if (map) {
+    if (!marker) {
+      marker = L.marker([lat, lng], { draggable: true, icon: L.divIcon({ className: "pin-icon", html: "📍", iconSize: [28, 28], iconAnchor: [14, 28] }) }).addTo(map);
+      marker.on("dragend", () => { const q = marker.getLatLng(); setDrop(q.lat, q.lng); });
+    } else marker.setLatLng([lat, lng]);
+  }
+  renderCart();
+  if (!name) reverseName(lat, lng);              // look up a readable landmark name for the pin
+}
+async function reverseName(lat, lng) {
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=17&lat=${lat}&lon=${lng}`);
+    const j = await r.json(), nm = (j.display_name || "").split(",").slice(0, 3).join(",").trim();
+    if (nm && drop && drop.lat === lat && drop.lng === lng) { drop.name = nm; renderCart(); }
+  } catch {}
+}
+async function searchPlace() {
+  const q = $("placeQ").value.trim(); if (!q) return;
+  if (!map) return toast("Map is not available right now");
+  $("placeGo").disabled = true;
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=ug&viewbox=32.40,0.50,32.80,0.10&q=${encodeURIComponent(q)}`);
+    const j = await r.json();
+    if (!j.length) toast("Couldn't find that place. Try a nearby landmark or tap the map.");
+    else { const lat = Number(j[0].lat), lng = Number(j[0].lon); map.setView([lat, lng], 16); setDrop(lat, lng, q); }
+  } catch { toast("Search is offline. Tap the map to drop your pin."); }
+  $("placeGo").disabled = false;
+}
+function initMap() {
+  if (map) return;
+  if (typeof L === "undefined") { $("delivery-map").innerHTML = '<p class="p-4 text-center text-xs text-neutral-400">Map could not load. Check your connection and reopen the cart.</p>'; return; }
+  map = L.map("delivery-map", { zoomControl: true }).setView([HUB.lat, HUB.lng], 12);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+  L.circleMarker([HUB.lat, HUB.lng], { radius: 7, color: "#FFC107", fillColor: "#FFC107", fillOpacity: 0.9 }).addTo(map).bindTooltip(HUB.name);
+  map.on("click", (e) => setDrop(e.latlng.lat, e.latlng.lng));
+  if (drop) setDrop(drop.lat, drop.lng, drop.name);
+}
+$("placeGo").onclick = searchPlace;
+$("placeQ").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); searchPlace(); } });
+$("gpsBtn").onclick = () => {
+  if (!navigator.geolocation) return toast("GPS is not supported on this device");
+  toast("Finding you…");
+  navigator.geolocation.getCurrentPosition((pos) => {
+    const { latitude: la, longitude: lo } = pos.coords;
+    if (map) map.setView([la, lo], 16); setDrop(la, lo);
+  }, () => toast("Couldn't get your location. Allow GPS access or tap the map."), { enableHighAccuracy: true, timeout: 12000 });
+};
 
-// Delivery order message: speed, items, total, drop-off, fee and the shopper's measurements
+// Final WhatsApp dispatch message
 const waDelivery = (names, total, fee) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-  `${speed === "express" ? "EXPRESS" : "STANDARD"} DELIVERY order for: ${names} at UGX ${total.toLocaleString("en-UG")}. Drop-off Location: ${area || "not chosen yet"} (Delivery Fee: UGX ${fee.toLocaleString("en-UG")}). My measurements are Chest: ${half(body.bust)}in, Waist: ${half(body.waist)}in, Hips: ${half(body.hips)}in.`)}`;
+  `${speed === "express" ? "EXPRESS" : "STANDARD"} DELIVERY order for: ${names} at UGX ${total.toLocaleString("en-UG")}. Exact Drop-off Spot: ${drop.name} (Distance: ${drop.km.toFixed(1)} km). Rider GPS Pin: https://www.google.com/maps?q=${drop.lat.toFixed(6)},${drop.lng.toFixed(6)} . My measurements are Chest: ${half(body.bust)}in, Waist: ${half(body.waist)}in, Hips: ${half(body.hips)}in.`)}`;
+
 function renderCart() {
-  const has = cart.length > 0, sub = cart.reduce((s, c) => s + c.price, 0), A = AREAS[area];
-  fillAreas();
+  const has = cart.length > 0, sub = cart.reduce((s, c) => s + c.price, 0);
   $("orderItems").innerHTML = has ? cart.map((c, i) => `<li class="flex items-start justify-between gap-3 py-2"><span class="min-w-0">${c.name}</span>
       <span class="flex shrink-0 items-center gap-1">${ugx(c.price)}<button data-cart-rm="${i}" aria-label="Remove ${c.name}" class="px-2 py-1 text-neutral-500 hover:text-white">✕</button></span></li>`).join("")
     : '<li class="py-2 text-neutral-500">Your cart is empty. Add a piece or tap Buy Outfit.</li>';
@@ -681,18 +828,44 @@ function renderCart() {
   $("orderWarn").classList.toggle("hidden", !tight.length);
   $("orderWarn").textContent = tight.length ? "Heads up: " + tight.join(" and ") + " may be tight on your measurements." : "";
   $("deliveryBox").classList.toggle("hidden", !has); $("totals").classList.toggle("hidden", !has); $("whatsappLink").classList.toggle("hidden", !has);
-  const fee = feeFor(area);
+  const fee = feeFor();
   document.querySelectorAll("[data-speed]").forEach((x) => x.setAttribute("aria-checked", x.dataset.speed === speed));
   $("speedNote").textContent = SPEED_NOTE[speed];
-  if (A) {
-    $("deliveryInfo").innerHTML = `Fare <b class="text-white">${ugx(fee)}</b> · ` + (speed === "express"
-      ? '<b class="text-gold">⚡ Estimated Arrival: Within 45–90 minutes (Priority Dispatch)</b>'
-      : "Estimated Arrival: Today (Standard Route)");
-  } else $("deliveryInfo").textContent = "Pick your area to see the fare and arrival time.";
-  $("tItems").textContent = ugx(sub); $("tDelivery").textContent = A ? ugx(fee) : "Choose area"; $("tTotal").textContent = ugx(sub + fee);
-  $("whatsappLink").href = has ? waDelivery(cart.map((c) => c.name).join(" + "), sub + fee, fee) : "#";
+  $("dropName").textContent = drop ? `📍 ${drop.name} · ${drop.km.toFixed(1)} km from our shop` : "Tap the map, drag the pin, search a landmark or use GPS to set your drop-off spot.";
+  if (drop) {
+    $("deliveryInfo").innerHTML = `Delivery fare <b class="text-white">${ugx(fee)}</b> · ` + (speed === "express"
+      ? '<b class="text-gold">⚡ Arrives in 45-90 Mins</b>' : "Estimated Arrival: Today");
+  } else $("deliveryInfo").textContent = "Drop a pin to see your delivery fare and arrival time.";
+  $("tItems").textContent = ugx(sub); $("tDelivery").textContent = drop ? ugx(fee) : "Drop a pin"; $("tTotal").textContent = ugx(sub + fee);
+  const ready = has && drop;
+  $("whatsappLink").classList.toggle("opacity-50", !ready);
+  $("whatsappLink").href = ready ? waDelivery(cart.map((c) => c.name).join(" + "), sub + fee, fee) : "#";
+  updateHoldClock();
 }
-function openCart() { renderCart(); $("orderDialog").showModal(); }
+function openCart() {
+  renderCart(); $("orderDialog").showModal();
+  if (cart.length) { initMap(); setTimeout(() => map && map.invalidateSize(), 150); }
+}
+
+/* Checkout click: opens WhatsApp (default link action), then marks the items 'sold' and removes them from the catalog */
+$("whatsappLink").addEventListener("click", (e) => {
+  if (!cart.length) return;
+  if (!drop) { e.preventDefault(); toast("Drop your delivery pin on the map first"); return; }
+  const entries = cart.slice(), info = { speed: speed === "express" ? "Express" : "Standard", dropName: drop.name, km: Number(drop.km.toFixed(1)), lat: drop.lat, lng: drop.lng, fee: feeFor() };
+  setTimeout(() => completeOrder(entries, info), 0);       // after the browser has taken the WhatsApp href
+});
+async function completeOrder(entries, info) {
+  const soldIds = new Set();
+  entries.forEach((en) => en.ids.forEach((id) => {
+    const p = products.find((x) => x.id === id); if (!p) return;
+    p.status = "sold"; soldIds.add(id);
+    soldArchive.push({ id, title: p.title, price: p.price, slot: p.slot, soldAt: Date.now(), ...info });
+  }));
+  saveSold(); cart.length = 0; updateBadge(); $("orderDialog").close(); renderSoldList();
+  soldIds.forEach((id) => { const c = document.querySelector(`[data-card="${id}"]`); if (c) c.classList.add("opacity-0", "-translate-x-10", "scale-95"); });   // slide out
+  await sleep(500);
+  renderAll(); toast("Order sent! Sold items were removed from the catalog.");
+}
 
 /* ===================== EVENTS ===================== */
 $("grid").addEventListener("click", (e) => {
@@ -713,9 +886,8 @@ $("resetBtn").onclick = () => { if (busy) return; look.bottoms = look.tops = loo
 $("buyBtn").onclick = buyOutfit;
 $("cartBtn").onclick = openCart;
 $("waOutfit").addEventListener("click", (e) => { if (!worn().length) { e.preventDefault(); toast("Try on an item first"); } });
-$("areaSel").onchange = (e) => { area = e.target.value; renderCart(); };
 document.querySelectorAll("[data-speed]").forEach((b) => b.onclick = () => { speed = b.dataset.speed; renderCart(); });
-$("orderItems").addEventListener("click", (e) => { const b = e.target.closest("[data-cart-rm]"); if (b) { cart.splice(Number(b.dataset.cartRm), 1); updateBadge(); renderProducts(); renderCart(); } });
+$("orderItems").addEventListener("click", (e) => { const b = e.target.closest("[data-cart-rm]"); if (b) { releaseEntry(cart.splice(Number(b.dataset.cartRm), 1)[0]); updateBadge(); renderProducts(); renderCart(); } });
 $("closeDialog").onclick = () => $("orderDialog").close();
 
 function runSearch(v) { query = v; $("q").value = v; location.hash = "#fashion"; showView("fashion"); renderProducts(); }
@@ -737,7 +909,7 @@ $("logo").addEventListener("click", () => {                       // 5 quick cli
 $("keyCancel").onclick = () => $("keyDialog").close();
 $("keyForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  if ($("keyInput").value === ADMIN_KEY) { $("keyDialog").close(); renderUploads(); $("adminDialog").showModal(); }
+  if ($("keyInput").value === ADMIN_KEY) { $("keyDialog").close(); renderUploads(); renderSoldList(); $("adminDialog").showModal(); }
   else { $("keyErr").classList.remove("hidden"); $("keyInput").select(); }
 });
 $("adminClose").onclick = () => $("adminDialog").close();
@@ -767,10 +939,14 @@ async function processPhoto(file, removeBg) {
 
 // Uploaded pieces have no measured sizes, so they get a typical size M garment for the chosen mannequin
 const TYPICAL = { f: { bust: 37.5, waist: 30, hips: 40 }, m: { bust: 40, waist: 34, hips: 39 } };
-function makeItem({ title, price, gender, slot, cond, photo }) {
+function makeItem({ title, price, gender, slot, cond, photo, chest, waist, hips, id }) {
   const t = TYPICAL[gender === "m" ? "m" : "f"], add = slot === "outer" ? 3 : 0;
-  return { id: Date.now(), tag: "UNIQUE PIECE", title, price, slot, shape: slot === "outer" ? "outer" : slot === "tops" ? "tops" : "trousers", fill: "#444", cond, for: gender, photo, upload: true,
-    size: slot === "bottoms" ? { waist: t.waist, hips: t.hips } : { bust: t.bust + add, waist: t.waist + add, hips: t.hips + add }, stretch: 0.03, sleeve: "long", cut: "regular", rise: 186 };
+  const C = Math.round(chest) || Math.round(t.bust + add), W = Math.round(waist) || Math.round(t.waist + add), H = Math.round(hips) || Math.round(t.hips + add);
+  return { id: id || Date.now(), tag: "UNIQUE PIECE", title, price, slot, layerPosition: slot === "bottoms" ? "Bottom" : slot === "outer" ? "Outer" : "Top",
+    shape: slot === "outer" ? "outer" : slot === "tops" ? "tops" : "trousers", fill: "#444", cond, for: gender, photo, upload: true, status: "available",
+    chest: slot === "bottoms" ? null : C, waist: W, hips: H,                       // integers stored on the product (inches)
+    size: slot === "bottoms" ? { waist: W, hips: H } : { bust: C, waist: W, hips: H },
+    stretch: 0.03, sleeve: "long", cut: "regular", rise: 186 };
 }
 function photoLayer(it) {                                          // draws an uploaded photo on the mannequin
   const c = CX, g = 1 + it.stretch;
@@ -781,7 +957,7 @@ function photoLayer(it) {                                          // draws an u
 function saveUploads() { try { localStorage.setItem(UPLOAD_KEY, JSON.stringify(uploads)); return true; } catch { return false; } }
 function loadUploads() { try { uploads = JSON.parse(localStorage.getItem(UPLOAD_KEY) || "[]"); } catch { uploads = []; } products.unshift(...uploads); }
 function renderUploads() {
-  $("uploadList").innerHTML = uploads.length ? uploads.map((u) => `<li class="flex items-center gap-3 rounded-lg bg-black p-2"><img src="${u.photo}" alt="" class="h-12 w-12 rounded bg-neutral-900 object-contain">
+  $("uploadList").innerHTML = uploads.length ? uploads.map((u) => `<li class="flex items-center gap-3 rounded-lg bg-black p-2"><img src="${u.photo || ""}" alt="" class="h-12 w-12 rounded bg-neutral-900 object-contain">
     <span class="min-w-0 flex-1"><b class="block truncate text-white">${u.title}</b><span class="text-xs text-neutral-500">${ugx(u.price)} · ${u.slot} · ${u.cond}</span></span>
     <button data-del="${u.id}" class="rounded px-3 py-2 text-xs text-red-300 hover:bg-neutral-800">Delete</button></li>`).join("") : '<li class="text-neutral-500">Nothing uploaded yet.</li>';
 }
@@ -794,7 +970,10 @@ $("adminForm").addEventListener("submit", async (e) => {
   $("aSubmit").disabled = true; $("aSubmit").textContent = "Processing…";
   try {
     const photo = await processPhoto(f, $("aRm").checked);
-    const item = makeItem({ title, price, gender: $("aGender").value, slot: $("aSlot").value, cond: $("aCond").value, photo });
+    const slot = $("aSlot").value, num = (id) => Math.round(Number($(id).value)) || 0;
+    const chest = num("admin-item-chest"), waist = num("admin-item-waist"), hips = num("admin-item-hips");
+    if (slot === "bottoms" ? !(waist > 0 && hips > 0) : !(chest > 0)) throw new Error(slot === "bottoms" ? "Bottoms need the garment Waist and Hips (inches)." : "Tops and jackets need the garment Chest/Bust (inches).");
+    const item = makeItem({ title, price, gender: $("aGender").value, slot, cond: $("aCond").value, photo, chest, waist, hips });
     uploads.push(item); products.unshift(item);
     if (!saveUploads()) toast("Added for this visit only (browser storage is full)");
     else toast(`${title} added to the catalog`);
@@ -812,8 +991,59 @@ $("uploadList").addEventListener("click", (e) => {
   saveUploads(); renderUploads(); renderAll();
 });
 
+/* ----- layer select: chest is ignored for bottoms ----- */
+function syncSizeInputs() {
+  const bottoms = $("aSlot").value === "bottoms";
+  $("admin-item-chest").disabled = bottoms; if (bottoms) $("admin-item-chest").value = "";
+}
+$("aSlot").addEventListener("change", syncSizeInputs); syncSizeInputs();
+
+/* ----- bulk CSV import ----- */
+function splitCSVLine(line) {                    // handles "quoted, values"
+  const out = []; let cur = "", q = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { if (q && line[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+    else if (ch === "," && !q) { out.push(cur.trim()); cur = ""; }
+    else cur += ch;
+  }
+  return out.concat(cur.trim());
+}
+const layerToSlot = (v) => { v = String(v || "").toLowerCase();
+  if (/^(out|jack|coat|blaz|hood)/.test(v)) return "outer";
+  if (/^(bot|trou|pant|jean|skirt|short|cargo)/.test(v)) return "bottoms";
+  if (/^(top|shirt|tee|t-shirt|blou|sweat|knit)/.test(v)) return "tops";
+  return null; };
+function csvMsg(text, ok) { const m = $("csvMsg"); m.textContent = text; m.className = "mt-2 text-xs " + (ok ? "text-green-300" : "text-red-300"); }
+$("admin-csv-file").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const lines = (await f.text()).replace(/^\uFEFF/, "").split(/\r?\n/).filter((l) => l.trim());
+  e.target.value = "";
+  if (!lines.length) return csvMsg("That file is empty.", false);
+  const rows = lines.map(splitCSVLine);
+  if (!/^[\d.,\sUGXugx]+$/.test(rows[0][1] || "")) rows.shift();          // first row is the header
+  const base = Date.now(); let added = 0; const bad = [];
+  rows.forEach((r, i) => {
+    const [title, priceRaw, g, layer, quality, chest, waist, hips, img] = r;
+    const price = Number(String(priceRaw || "").replace(/[^\d.]/g, "")), slot = layerToSlot(layer);
+    const n = (v) => Math.round(Number(v)) || 0, C = n(chest), W = n(waist), H = n(hips);
+    const ok = title && price > 0 && slot && (slot === "bottoms" ? W > 0 && H > 0 : C > 0);
+    if (!ok) return bad.push(i + 2);
+    const gl = String(g || "").toLowerCase(), gender = /^(m|men|male)/.test(gl) ? "m" : /^(f|w|female|wom)/.test(gl) ? "f" : "u";
+    const file = (img || "").split(/[\\/]/).pop();
+    const item = makeItem({ title, price, gender, slot, cond: quality || "Gently Loved", photo: file ? "assets/products/" + encodeURI(file) : undefined, chest: C, waist: W, hips: H, id: base + i });
+    uploads.push(item); products.unshift(item); added++;
+  });
+  if (added) { saveUploads(); renderUploads(); renderAll(); }
+  csvMsg(`Imported ${added} item${added === 1 ? "" : "s"}.` + (bad.length ? ` Skipped row${bad.length > 1 ? "s" : ""} ${bad.join(", ")} (missing title, price, layer or the right sizes).` : ""), added > 0);
+});
+$("csvTemplate").onclick = () => {
+  const csv = "Title,Price,Gender,Layer,Quality,Chest,Waist,Hips,ImageFileName\nCargo Pants,55000,Male,Bottom,Like New,,34,40,cargo-pants.jpg\nStriped Tee,25000,Female,Top,Gently Loved,36,,,striped-tee.png\n";
+  const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv); a.download = "closet-template.csv"; a.click();
+};
+
 /* ===================== START ===================== */
-loadUploads(); loadProfile(); renderHero(); renderSliders(); renderAll(); updateBadge(); showView(location.hash.slice(1));
+loadUploads(); loadSold(); loadProfile(); setInterval(tickHolds, 1000); renderHero(); renderSliders(); renderAll(); updateBadge(); showView(location.hash.slice(1));
 </script>
 </body>
 </html>
