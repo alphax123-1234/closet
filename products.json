@@ -1,0 +1,28 @@
+[
+  {
+    "id": "denim-jacket-01",
+    "title": "Vintage Denim Jacket",
+    "price": 45000,
+    "size": "M",
+    "chest": 42,
+    "waist": 40,
+    "length": 25,
+    "fabric": "Heavy Denim, 100% Cotton",
+    "condition": "Gently Used",
+    "note": "Boxy fit with a soft, worn-in fade. Pairs with anything.",
+    "image": "images/denim-jacket-01.jpg"
+  },
+  {
+    "id": "linen-shirt-01",
+    "title": "Classic Linen Button Shirt",
+    "price": 30000,
+    "size": "L",
+    "chest": 44,
+    "waist": 42,
+    "length": 29,
+    "fabric": "100% Linen",
+    "condition": "Like New",
+    "note": "Airy and crisp, perfect for hot Kampala afternoons.",
+    "image": "images/linen-shirt-01.jpg"
+  }
+]
