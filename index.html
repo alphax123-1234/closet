@@ -357,7 +357,7 @@ $("promos").innerHTML = promos.map((p) => `
                      "chest": 42, "waist": 38, "length": 29, "fabric": "Wool Blend", "note": "Sharp shoulders, clean lines.",
                      "image": "images/p1.png", "isSold": false } ] }
 
-   A plain list of products also works. If products.json is missing, INLINE_DATA below is used instead.
+   A plain list of products also works. If products.json is missing, INLINE_DATA below takes over.
    For a quick preview you can also add  ?theme=Streetwear Week  to the page address. */
 const CONDITION = "Brand New (Unworn)";                       // every piece is new, so this never changes
 const INLINE_DATA = { config: { currentDropTheme: "THE COLLECTION" }, products: [] };
