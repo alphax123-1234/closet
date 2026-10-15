@@ -3,17 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CLOSET | Kampala's Best Hand-Picked Thrift Deals</title>
+<title>CLOSET | Premium 1-of-1 Drops. Brand New.</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config = { theme: { extend: { colors: { gold: "#FFC107", card: "#121212" } } } };</script>
 <style>
   .tab[aria-current="page"] { color: #fff; border-color: #FFC107; }
   select { color-scheme: dark; }
-  /* Large premium shop grid: 1 card per row on phones, 2 on tablets, 3 on desktops */
+  /* Large premium shop grid: 1 big card per row on phones, 2 on tablets and laptops, 3 on wide screens */
   .shop-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
-  @media (min-width: 700px) { .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; } }
-  @media (min-width: 1100px) { .shop-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-  .pcard, .slot { content-visibility: auto; contain-intrinsic-size: auto 760px; }   /* lets the browser skip off-screen cards, so thousands stay smooth */
+  @media (min-width: 640px) { .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; } }
+  @media (min-width: 1280px) { .shop-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .pcard, .slot { content-visibility: auto; contain-intrinsic-size: auto 820px; }   /* lets the browser skip off-screen cards, so thousands stay smooth */
+  /* Studio frame: the whole garment (shoulders, sleeves, hems) always shows, and transparent PNG cut-outs sit on a soft spotlight */
+  .pimg { background: radial-gradient(75% 65% at 50% 38%, #2a2a2a 0%, #0d0d0d 100%); }
+  /* SOLD OUT: semi-transparent red diagonal band across the photo */
+  .sold-wrap { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; pointer-events: none; background: rgba(0,0,0,.25); }
+  .sold-band { width: 170%; padding: .7rem 0; text-align: center; transform: rotate(-24deg); background: rgba(220,38,38,.78); border-block: 2px solid rgba(255,255,255,.55);
+    color: #fff; font-weight: 900; letter-spacing: .4em; text-indent: .4em; font-size: clamp(1.25rem, 4.4vw, 2rem); text-shadow: 0 2px 8px rgba(0,0,0,.45); }
 </style>
 </head>
 <body class="bg-black font-sans text-neutral-200 antialiased">
@@ -29,9 +35,9 @@
     </div>
 
     <!-- Search: flat border, gold button attached to the right edge -->
-    <form id="searchForm" class="order-last flex w-full border border-neutral-600 bg-card focus-within:border-gold md:order-none md:mx-auto md:w-auto md:max-w-2xl md:flex-1">
-      <input id="q" type="search" placeholder="Search products, brands and categories" aria-label="Search" class="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-white outline-none placeholder:text-neutral-500">
-      <button type="submit" class="flex shrink-0 items-center gap-1.5 bg-gold px-4 text-sm font-extrabold tracking-wider text-black hover:bg-yellow-300 md:px-6">
+    <form id="searchForm" class="order-last flex w-full items-center overflow-hidden rounded-full border border-neutral-700 bg-card py-1 pl-5 pr-1 transition focus-within:border-gold focus-within:shadow-[0_0_0_3px_rgba(255,193,7,.15)] md:order-none md:mx-auto md:w-auto md:max-w-2xl md:flex-1">
+      <input id="q" type="search" placeholder="Search products, brands and categories" aria-label="Search" class="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-white outline-none placeholder:text-neutral-500">
+      <button type="submit" class="flex shrink-0 items-center gap-1.5 rounded-full bg-gold px-4 py-2.5 text-sm font-extrabold tracking-wider text-black hover:bg-yellow-300 md:px-6">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>SEARCH
       </button>
     </form>
@@ -96,15 +102,15 @@
   <div id="promos" class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 md:mt-8 md:gap-6"></div>
 </section>
 
-<!-- ================= VIEW 2: FASHION + TRY-ON ROOM ================= -->
+<!-- ================= VIEW 2: THE COLLECTION ================= -->
 <section id="view-fashion" class="hidden">
   <div class="mb-5 md:mb-8">
-    <p class="text-xs font-semibold uppercase tracking-[0.3em] text-gold">The collection</p>
-    <h1 class="mt-1 text-2xl font-extrabold text-white md:text-4xl">Hand-Picked Thrift</h1>
+    <p class="text-xs font-semibold uppercase tracking-[0.3em] text-gold">This week's drop</p>
+    <h1 id="dropTitle" class="mt-1 text-2xl font-extrabold text-white md:text-4xl"></h1>
     <p id="count" class="mt-1 text-sm text-neutral-400"></p>
   </div>
 
-  <!-- Product grid: 1 large card per row on phones, 2 on tablets, 3 on desktops -->
+  <!-- Product grid: 1 large card per row on phones, 2 on tablets and laptops, 3 on wide screens -->
   <div id="grid" class="shop-grid"></div>
   <p id="empty" class="hidden py-16 text-center text-neutral-500">No items match your search.</p>
   <div id="sentinel" aria-hidden="true" class="h-px"></div>
@@ -112,7 +118,7 @@
 </section>
 </main>
 
-<footer class="mt-10 border-t border-neutral-800 py-6 text-center text-xs text-neutral-500">© CLOSET. Every item is inspected, owned and delivered by CLOSET, Kampala.</footer>
+<footer class="mt-10 border-t border-neutral-800 py-6 text-center text-xs text-neutral-500">© CLOSET. Every piece is brand new and 1-of-1, delivered by CLOSET across Kampala &amp; Entebbe.</footer>
 
 <div id="toast" class="pointer-events-none fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-black opacity-0 shadow-xl transition-opacity duration-300" role="status"></div>
 
@@ -163,7 +169,7 @@
 <dialog id="adminDialog" class="w-[min(94vw,34rem)] rounded-2xl border border-neutral-800 bg-card p-0 text-neutral-200 shadow-2xl backdrop:bg-black/80">
   <div class="max-h-[90dvh] overflow-y-auto p-5">
     <h2 class="text-lg font-semibold text-white">⚙️ Test Admin Control Panel</h2>
-    <p class="mt-1 text-xs text-neutral-500">Items you add here are saved in this browser only. They fill the first free slot on the shop page straight away.</p>
+    <p class="mt-1 text-xs text-neutral-500">Items you add here are saved in this browser only. They fill the first free slot in the collection straight away.</p>
     <form id="adminForm" class="mt-4 space-y-3 text-sm">
       <label class="block"><span class="text-neutral-300">Title</span>
         <input id="aTitle" required maxlength="60" placeholder="e.g. Vintage Denim Jacket" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-gold"></label>
@@ -181,14 +187,14 @@
       <label class="block"><span class="text-neutral-300">Fabric material</span>
         <input id="aFabric" maxlength="50" placeholder="e.g. 100% Cotton, Heavy Denim, Wool Blend" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-gold"></label>
       <label class="block"><span class="text-neutral-300">Condition</span>
-        <select id="aCond" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option>Like New</option><option>Gently Used</option><option>Good Condition</option></select></label>
+        <select id="aCond" class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-2 py-3 text-white"><option>Brand New (Unworn)</option></select></label>
       <label class="block"><span class="text-neutral-300">Style note (short)</span>
         <textarea id="aNote" rows="2" maxlength="140" placeholder="e.g. Boxy fit with a soft, worn-in fade." class="mt-1 w-full rounded-lg border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-gold"></textarea></label>
-      <label class="block"><span class="text-neutral-300">Photo (from your device)</span>
+      <label class="block"><span class="text-neutral-300">Photo (PNG with a transparent background works best for ghost-mannequin shots)</span>
         <input id="aFile" type="file" accept="image/*" required class="mt-1 w-full rounded-lg border border-neutral-700 bg-black p-2 text-neutral-300 file:mr-3 file:rounded-md file:border-0 file:bg-gold file:px-3 file:py-2 file:font-semibold file:text-black"></label>
       <img id="aPreview" alt="" class="mx-auto hidden max-h-44 rounded-lg bg-neutral-900">
       <p id="aErr" role="alert" class="hidden text-xs text-red-300"></p>
-      <button type="submit" id="aSubmit" class="w-full rounded-lg bg-gold py-3 text-sm font-bold text-black hover:bg-yellow-300 disabled:opacity-50">Add to shop</button>
+      <button type="submit" id="aSubmit" class="w-full rounded-lg bg-gold py-3 text-sm font-bold text-black hover:bg-yellow-300 disabled:opacity-50">Add to the collection</button>
     </form>
     <div class="mt-5 border-t border-neutral-800 pt-3">
       <h3 class="text-sm font-semibold text-white">Uploaded items</h3>
@@ -225,7 +231,7 @@ $("menuBtn").onclick = (e) => { const open = $("drawer").classList.toggle("hidde
 
 /* ===================== HELP MENU (click or hover) ===================== */
 const HELP = {
-  center:   ["Help Center", ["Every piece on CLOSET is hand-picked, quality-checked, owned and delivered by us.", "Each card shows the size, measurements, fabric and condition so you know exactly what you're getting.", "Stuck? Tap the green button to chat with us on WhatsApp."]],
+  center:   ["Help Center", ["Every piece on CLOSET is brand new, unworn and strictly 1-of-1. When it's gone, it's gone.", "Each card shows the size, measurements, fabric and condition so you know exactly what you're getting.", "Stuck? Tap the green button to chat with us on WhatsApp."]],
   order:    ["Place an Order", ["1. Browse the Fashion page and tap a photo to enlarge it.", "2. Check the size, measurements, fabric and condition under each picture.", "3. Tap Add to Cart, or Buy Now to check out straight away.", "4. Pick your delivery area and tap Order via WhatsApp."]],
   pay:      ["Payments Options", ["Cash on Delivery: pay the rider when your parcel arrives.", "Mobile Money: MTN or Airtel Money, confirmed with us on WhatsApp."]],
   delivery: ["Delivery Timelines", ["We deliver within Kampala and Entebbe via SafeBoda.", "Choose your area at checkout to see the delivery fare and an estimated arrival time. Most orders arrive within a few hours."]],
@@ -257,7 +263,7 @@ const bg = (id, a, b, glow) => `<defs><linearGradient id="${id}" x1="0" y1="0" x
   <radialGradient id="${id}g" cx=".8" cy=".1" r=".7"><stop offset="0" stop-color="${glow}"/><stop offset="1" stop-color="rgba(0,0,0,0)"/></radialGradient></defs>
   <rect width="100%" height="100%" fill="url(#${id})"/><rect width="100%" height="100%" fill="url(#${id}g)"/>`;
 
-const heroRack = () => { // slide 1: a rail of hanging thrift pieces, kept to the right so the text side stays clean
+const heroRack = () => { // slide 1: a rail of hanging garments, kept to the right so the text side stays clean
   let s = bg("a1", "#050505", "#1c1505", "rgba(255,193,7,.35)") + '<path d="M430 120H900" stroke="#777" stroke-width="5"/>';
   ["#8a6a3a", "#3f5f8a", "#e9e3d3", "#a33b4c"].forEach((c, i) => { const x = 500 + i * 110; s += hang(x, 120, 1.4) + garment(x, 207, 1.4, c, i % 2 ? JKT : TEE); });
   return art("0 0 900 450", s, "xMax");
@@ -290,9 +296,9 @@ const tileBoda = () => art("0 0 400 260", bg("t3", "#101010", "#1b1405", "rgba(2
 /* ===================== HOME: hero carousel ===================== */
 // Drop real photos into an "images" folder with these names and they replace the illustrations automatically.
 const SLIDES = [
-  { art: heroRack,    img: "images/hero-1.jpg", title: "CLOSET: Kampala's Best Hand-Picked Thrift Deals!", text: "Quality-Checked Second Hand Clothes • Instant Bodaboda Delivery" },
-  { art: heroCamera,  img: "images/hero-2.jpg", title: "First Camera Selections!",  text: "New arrivals straight from Owino Market drops." },
-  { art: heroMinimal, img: "images/hero-3.jpg", title: "Everyday Wardrobe Basics!", text: "Highly affordable pieces matching Think Twice rates." },
+  { art: heroRack,    img: "images/hero-1.jpg", title: "CLOSET: Premium Brand-New Apparel. Strictly 1-of-1.", text: "Every piece is unworn and one of one. When it's gone, it's gone." },
+  { art: heroCamera,  img: "images/hero-2.jpg", title: "Fresh Drops, Every Week.",  text: "New pieces land weekly. Be the first to claim yours." },
+  { art: heroMinimal, img: "images/hero-3.jpg", title: "Everyday Luxury, Engineered to Fit.", text: "Premium silhouettes in single-piece runs, delivered across Kampala &amp; Entebbe." },
 ];
 let slide = 0, slideTimer;
 function renderHero() {
@@ -327,9 +333,9 @@ $("hero").addEventListener("touchend", (e) => { const dx = e.changedTouches[0].c
 
 /* ===================== HOME: image tiles ===================== */
 const promos = [
-  { art: tileNew,    img: "images/tile-new.jpg",      tag: "First Camera Selections", title: "NEW ARRIVALS",                          text: "Fresh finds, photographed first and picked by us." },
-  { art: tileBasics, img: "images/tile-basics.jpg",   tag: "Wear them every day",     title: "EVERYDAY WARDROBE BASICS",             text: "Tees, jeans and shirts that go with everything." },
-  { art: tileBoda,   img: "images/tile-delivery.jpg", tag: "Kampala & Entebbe",       title: "INSTANT KAMPALA DELIVERY • NO WAITING", text: "Pick your area at checkout to see your fare and arrival time." },
+  { art: tileNew,    img: "images/tile-new.jpg",      tag: "Brand new · Unworn",  title: "ELITE ARRIVALS",          text: "Freshly minted style drops, direct from premium selections." },
+  { art: tileBasics, img: "images/tile-basics.jpg",   tag: "Everyday luxury",     title: "DAILY LUXURY ESSENTIALS", text: "Premium everyday silhouettes engineered to fit flawlessly." },
+  { art: tileBoda,   img: "images/tile-delivery.jpg", tag: "Kampala &amp; Entebbe", title: "EXPRESS HOME DELIVERY",   text: "Instant Kampala &amp; Entebbe dispatch. Real-time arrival tracking at checkout." },
 ];
 $("promos").innerHTML = promos.map((p) => `
   <a href="#fashion" class="group relative flex h-60 flex-col justify-end overflow-hidden rounded-2xl border border-neutral-800 bg-card p-5 transition duration-300 hover:-translate-y-1 hover:border-gold hover:shadow-xl md:h-72 md:p-6">
@@ -342,42 +348,50 @@ $("promos").innerHTML = promos.map((p) => `
       <span class="mt-3 inline-block text-sm font-semibold text-white group-hover:text-gold">Shop now ➔</span>
     </div></a>`).join("");
 
-/* ===================== SHOP DATA =====================
-   Items come from three places, newest first:
-   1) items uploaded in the secret admin panel (kept in this browser's IndexedDB)
-   2) an optional products.json file next to index.html (use this for large catalogs, up to 10,000 items)
-   3) sample items, only when the address ends with ?demo
-   products.json is a list like:
-   [{ "id": "p1", "title": "Vintage Denim Jacket", "price": 45000, "size": "M", "chest": 42, "waist": 40, "length": 25,
-      "fabric": "Heavy Denim, 100% Cotton", "condition": "Gently Used", "note": "Boxy fit, soft fade.", "image": "images/p1.jpg" }]   */
-const MIN_SLOTS = 5;     // the shop always shows at least this many cards (empty ones are "Coming Soon")
+/* ===================== DROP CONFIG + PRODUCT DATA =====================
+   Everything the shop shows comes from products.json (next to index.html), so a weekly update is just a
+   file edit; this HTML never changes. Format:
+
+   { "config":   { "currentDropTheme": "THE COLLECTION: Classy Week Drops" },
+     "products": [ { "id": "p1", "title": "Tailored Wool Blazer", "price": 85000, "size": "M",
+                     "chest": 42, "waist": 38, "length": 29, "fabric": "Wool Blend", "note": "Sharp shoulders, clean lines.",
+                     "image": "images/p1.png", "isSold": false } ] }
+
+   A plain list of products also works. If products.json is missing, INLINE_DATA below is used instead.
+   For a quick preview you can also add  ?theme=Streetwear Week  to the page address. */
+const CONDITION = "Brand New (Unworn)";                       // every piece is new, so this never changes
+const INLINE_DATA = { config: { currentDropTheme: "THE COLLECTION" }, products: [] };
+let currentDropTheme = INLINE_DATA.config.currentDropTheme;   // the catalog heading (replaced by the value in products.json)
+
+const MIN_SLOTS = 5;     // the shop always shows at least this many cards (empty ones say COMING SOON TO THE COLLECTION)
 const BATCH = 24;        // cards drawn at a time, so even 10,000 items stay fast
 const products = [], byId = new Map();
 let query = "", view = [], shown = 0;
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const truthy = (v) => v === true || v === "true" || v === 1;
 function normalize(raw, i) {
   const p = { id: String(raw.id ?? "item-" + i), title: String(raw.title || "Untitled piece"), price: Number(raw.price) || 0, size: raw.size || "", chest: raw.chest || "", waist: raw.waist || "",
-    length: raw.length || "", fabric: raw.fabric || "", cond: raw.condition || raw.cond || "", note: raw.note || raw.styleNote || "", img: raw.image || raw.img || "", uploaded: !!raw.uploaded };
-  p._q = (p.title + " " + p.size + " " + p.fabric + " " + p.cond + " " + p.note).toLowerCase();   // pre-built search text
+    length: raw.length || "", fabric: raw.fabric || "", note: raw.note || raw.styleNote || "", img: raw.image || raw.img || "", uploaded: !!raw.uploaded,
+    isSold: truthy(raw.isSold ?? raw.sold), _rec: raw.uploaded ? raw : null };                // isSold: true shows the SOLD OUT overlay
+  p._q = (p.title + " " + p.size + " " + p.fabric + " " + p.note).toLowerCase();             // pre-built search text
   return p;
 }
 
-/* ----- sample items (?demo) ----- */
+/* ----- sample items (?demo): one of them is sold out so you can see the overlay ----- */
 const TRS = "M-26 -40 L26 -40 L30 52 L8 52 L0 -2 L-8 52 L-30 52Z";
 function sampleArt(path, color) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1c1c1c"/><stop offset="1" stop-color="#0a0a0a"/></linearGradient>
-    <pattern id="w" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0 6L6 0" stroke="rgba(255,255,255,.14)"/></pattern></defs><rect width="400" height="500" fill="url(#g)"/>
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><defs><pattern id="w" width="6" height="6" patternUnits="userSpaceOnUse"><path d="M0 6L6 0" stroke="rgba(255,255,255,.14)"/></pattern></defs>
     <g transform="translate(200 250) scale(3.2)"><path d="${path}" fill="${color}" stroke="rgba(255,255,255,.35)" stroke-width=".6"/><path d="${path}" fill="url(#w)"/></g></svg>`;
-  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);   // transparent background, like a ghost-mannequin cut-out
 }
 const SAMPLES = [
-  { id: "demo-1", title: "Vintage Denim Jacket", price: 45000, size: "M", chest: 42, waist: 40, length: 25, fabric: "Heavy Denim, 100% Cotton", condition: "Gently Used", note: "Boxy fit with a soft, worn-in fade. Pairs with anything.", img: sampleArt(JKT, "#3f5f8a") },
-  { id: "demo-2", title: "Classic Linen Button Shirt", price: 30000, size: "L", chest: 44, waist: 42, length: 29, fabric: "100% Linen", condition: "Like New", note: "Airy and crisp, perfect for hot Kampala afternoons.", img: sampleArt(TEE, "#e9e3d3") },
-  { id: "demo-3", title: "Retro Cotton Trousers", price: 30000, size: "32", waist: 32, length: 41, fabric: "Cotton Twill Blend", condition: "Gently Used", note: "High-rise, straight leg, with a vintage drape.", img: sampleArt(TRS, "#8a7a5a") },
+  { id: "demo-1", title: "Structured Denim Jacket", price: 85000, size: "M", chest: 42, waist: 40, length: 25, fabric: "Heavy Denim, 100% Cotton", note: "Boxy, sharp-shouldered and ready to layer.", img: sampleArt(JKT, "#3f5f8a") },
+  { id: "demo-2", title: "Linen Button Shirt", price: 60000, size: "L", chest: 44, waist: 42, length: 29, fabric: "100% Linen", note: "Airy and crisp, made for hot Kampala afternoons.", img: sampleArt(TEE, "#e9e3d3"), isSold: true },
+  { id: "demo-3", title: "Tailored Cotton Trousers", price: 70000, size: "32", waist: 32, length: 41, fabric: "Cotton Twill Blend", note: "High-rise, straight leg, with a clean drape.", img: sampleArt(TRS, "#8a7a5a") },
 ];
 
-/* ----- saved uploads (IndexedDB: much more room than localStorage) ----- */
+/* ----- saved admin uploads (IndexedDB: much more room than localStorage) ----- */
 const DB_NAME = "closet_store", STORE = "products";
 const idb = () => new Promise((res, rej) => { const r = indexedDB.open(DB_NAME, 1); r.onupgradeneeded = () => r.result.createObjectStore(STORE, { keyPath: "id" }); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
 const dbAll = async () => { const db = await idb(); return new Promise((res, rej) => { const q = db.transaction(STORE).objectStore(STORE).getAll(); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); };
@@ -385,58 +399,64 @@ const dbPut = async (rec) => { const db = await idb(); return new Promise((res, 
 const dbDel = async (id) => { const db = await idb(); return new Promise((res, rej) => { const t = db.transaction(STORE, "readwrite"); t.objectStore(STORE).delete(id); t.oncomplete = res; t.onerror = () => rej(t.error); }); };
 
 async function loadData() {
+  let data = INLINE_DATA;
+  try { const r = await fetch("products.json", { cache: "no-cache" }); if (r.ok) { const j = await r.json(); data = Array.isArray(j) ? { config: {}, products: j } : j; } } catch (_) {}
+  const theme = new URLSearchParams(location.search).get("theme") || (data.config && data.config.currentDropTheme) || INLINE_DATA.config.currentDropTheme;
+  currentDropTheme = String(theme);
+
   const out = [];
   try { (await dbAll()).sort((a, b) => b.createdAt - a.createdAt).forEach((r) => out.push(normalize({ ...r, img: URL.createObjectURL(r.photo), uploaded: true }))); } catch (_) {}
-  try { const r = await fetch("products.json", { cache: "no-cache" }); if (r.ok) { const arr = await r.json(); if (Array.isArray(arr)) arr.forEach((x, i) => out.push(normalize(x, i))); } } catch (_) {}
+  (Array.isArray(data.products) ? data.products : []).forEach((x, i) => out.push(normalize(x, i)));
   if (/[?&]demo\b/.test(location.search)) SAMPLES.forEach((x, i) => out.push(normalize(x, i)));
   products.length = 0; byId.clear();
   for (const p of out) { products.push(p); byId.set(p.id, p); }
 }
+const paintTheme = () => { $("dropTitle").textContent = currentDropTheme; };
 
 /* ===================== CARDS ===================== */
 const inCart = (id) => cart.some((c) => c.id === id);
 function cardHTML(p) {
-  const inC = inCart(p.id);
+  const inC = inCart(p.id), sold = p.isSold;
   const cell = (k, v, cls = "", span = false) => v ? `<div class="${span ? "col-span-2" : ""}"><dt class="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">${k}</dt><dd class="mt-0.5 text-sm ${cls || "text-white"}">${esc(v)}</dd></div>` : "";
   const inch = (v) => (v ? v + " in" : "");
-  const cond = /like new/i.test(p.cond) ? "text-green-400" : "text-sky-300";
+  const buttons = sold
+    ? `<button disabled class="col-span-2 cursor-not-allowed rounded-lg bg-neutral-800 py-3 text-sm font-bold uppercase tracking-widest text-neutral-400">Archived</button>`
+    : `<button data-add="${esc(p.id)}" ${inC ? "disabled" : ""} class="rounded-lg bg-gold py-3 text-sm font-bold text-black hover:bg-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white disabled:opacity-60">${inC ? "In Cart ✓" : "Add to Cart"}</button>
+       <button data-buy="${esc(p.id)}" class="rounded-lg border border-neutral-500 py-3 text-sm font-bold text-white hover:bg-neutral-800">Buy Now</button>`;
   return `<article data-id="${esc(p.id)}" class="pcard group flex flex-col overflow-hidden rounded-2xl border border-neutral-800 bg-card transition duration-300 hover:-translate-y-1 hover:border-neutral-600 hover:shadow-2xl">
-    <button type="button" data-zoom="${esc(p.id)}" class="relative block aspect-[4/5] w-full overflow-hidden bg-black" aria-label="Enlarge photo of ${esc(p.title)}">
-      ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.title)}" loading="lazy" decoding="async" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">` : ""}
+    <button type="button" data-zoom="${esc(p.id)}" class="pimg relative block aspect-[4/5] w-full overflow-hidden" aria-label="Enlarge photo of ${esc(p.title)}">
+      ${p.img ? `<img src="${esc(p.img)}" alt="${esc(p.title)}" loading="lazy" decoding="async" class="h-full w-full object-contain p-5 transition-transform duration-500 group-hover:scale-105 ${sold ? "opacity-50 grayscale" : ""}">` : ""}
+      ${sold ? `<span class="sold-wrap" aria-hidden="true"><span class="sold-band">SOLD OUT</span></span>` : ""}
       <span class="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-[11px] font-semibold text-white ring-1 ring-white/20">Tap to enlarge</span>
     </button>
     <div class="flex flex-1 flex-col p-5">
-      <p class="text-[10px] font-medium uppercase tracking-widest text-neutral-500">UNIQUE THRIFT PIECE - ONLY 1 LEFT</p>
+      <p class="text-[10px] font-medium uppercase tracking-widest ${sold ? "text-red-400" : "text-neutral-500"}">${sold ? "1-OF-1 PIECE · SOLD OUT" : "1-OF-1 PIECE · ONLY 1 LEFT"}</p>
       <h3 class="mt-1.5 text-lg font-semibold leading-snug text-white">${esc(p.title)}</h3>
-      <p class="mt-1 text-2xl font-extrabold text-white">${ugx(p.price)}</p>
+      <p class="mt-1 text-2xl font-extrabold ${sold ? "text-neutral-500 line-through" : "text-white"}">${ugx(p.price)}</p>
       <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-neutral-800 pt-4">
-        ${cell("Size", p.size)}${cell("Condition", p.cond, cond)}${cell("Chest", inch(p.chest))}${cell("Waist", inch(p.waist))}${cell("Length", inch(p.length))}${cell("Fabric", p.fabric, "", true)}
+        ${cell("Size", p.size)}${cell("Condition", CONDITION, "text-green-400")}${cell("Chest", inch(p.chest))}${cell("Waist", inch(p.waist))}${cell("Length", inch(p.length))}${cell("Fabric", p.fabric, "", true)}
       </dl>
       ${p.note ? `<p class="mt-4 border-l-2 border-gold/60 pl-3 text-sm italic leading-relaxed text-neutral-300">${esc(p.note)}</p>` : ""}
-      <div class="mt-auto grid grid-cols-2 gap-2 pt-5">
-        <button data-add="${esc(p.id)}" ${inC ? "disabled" : ""} class="rounded-lg bg-gold py-3 text-sm font-bold text-black hover:bg-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white disabled:opacity-60">${inC ? "In Cart ✓" : "Add to Cart"}</button>
-        <button data-buy="${esc(p.id)}" class="rounded-lg border border-neutral-500 py-3 text-sm font-bold text-white hover:bg-neutral-800">Buy Now</button>
-      </div>
+      <div class="mt-auto grid grid-cols-2 gap-2 pt-5">${buttons}</div>
     </div></article>`;
 }
-function slotHTML(n) {   // "Coming Soon" placeholder with the same footprint as a real card
-  return `<article class="slot flex flex-col overflow-hidden rounded-2xl border border-dashed border-neutral-700 bg-card/40 transition hover:border-gold/50" aria-label="Empty slot ${n}">
-    <div class="flex aspect-[4/5] w-full flex-col items-center justify-center gap-4 text-neutral-600">
-      <svg viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M32 22v-5a5 5 0 1 1 5 5"/><path d="M32 22 6 42h52z"/></svg>
-      <p class="text-xs font-semibold uppercase tracking-[0.35em] text-neutral-500">Coming Soon</p>
+function slotHTML(n) {   // empty slot: faint dashed outline, central typography, same footprint as a real card
+  return `<article class="slot flex flex-col overflow-hidden rounded-2xl border border-dashed border-neutral-700/80 bg-card/30 transition hover:border-gold/40" aria-label="Empty slot ${n}: coming soon to the collection">
+    <div class="relative flex aspect-[4/5] w-full items-center justify-center p-5">
+      <div class="flex h-full w-full flex-col items-center justify-center rounded-xl border border-neutral-800/80 px-4 text-center">
+        <p class="text-2xl font-extrabold uppercase leading-none tracking-[0.18em] text-neutral-600 sm:text-3xl">Coming <br>Soon</p>
+        <span class="my-4 block h-px w-10 bg-neutral-700"></span>
+        <p class="text-[11px] font-semibold uppercase tracking-[0.4em] text-neutral-600">To the collection</p>
+      </div>
+      <span class="absolute left-7 top-7 text-[11px] font-semibold tracking-[0.3em] text-neutral-700">${String(n).padStart(2, "0")}</span>
     </div>
-    <div class="p-5">
-      <p class="text-[10px] font-medium uppercase tracking-widest text-neutral-600">Slot ${String(n).padStart(2, "0")} · Empty</p>
-      <div class="mt-3 h-4 w-3/4 rounded bg-neutral-900"></div><div class="mt-2 h-6 w-1/3 rounded bg-neutral-900"></div>
-      <div class="mt-5 grid grid-cols-2 gap-3"><div class="h-8 rounded bg-neutral-900"></div><div class="h-8 rounded bg-neutral-900"></div><div class="h-8 rounded bg-neutral-900"></div><div class="h-8 rounded bg-neutral-900"></div></div>
-      <p class="mt-5 text-sm text-neutral-600">New pieces are added regularly.</p>
-    </div></article>`;
+    <div class="space-y-2 p-5"><div class="h-3 w-1/2 rounded-full bg-neutral-900"></div><div class="h-5 w-1/4 rounded-full bg-neutral-900"></div><div class="h-10 rounded-lg border border-neutral-900"></div></div></article>`;
 }
 
 /* ===================== GRID: fills the first slots, then grows batch by batch ===================== */
 function renderGrid() {
   const q = query.trim().toLowerCase();
-  view = q ? products.filter((p) => p._q.includes(q)) : products;
+  view = q ? products.filter((p) => p._q.includes(q) || (p.isSold && "sold out archived".includes(q))) : products;
   $("grid").innerHTML = ""; shown = 0;
   $("empty").classList.toggle("hidden", !(q && view.length === 0));
   showMore();
@@ -457,8 +477,9 @@ function fillViewport() {                                                   // k
   for (let guard = 0; shown < view.length && guard < 60 && $("sentinel").getBoundingClientRect().top < innerHeight + 800; guard++) showMore();
 }
 function updateCount() {
-  const n = view.length, q = query.trim();
-  $("count").textContent = q ? `${n} result${n === 1 ? "" : "s"} for "${q}"` : n ? `${n.toLocaleString("en-UG")} piece${n === 1 ? "" : "s"} available` : "New pieces are arriving soon";
+  const n = view.length, q = query.trim(), sold = view.filter((p) => p.isSold).length, avail = n - sold;
+  $("count").textContent = q ? `${n} result${n === 1 ? "" : "s"} for "${q}"`
+    : n ? `${avail.toLocaleString("en-UG")} piece${avail === 1 ? "" : "s"} available${sold ? ` · ${sold.toLocaleString("en-UG")} sold out` : ""}` : "New pieces are arriving soon";
 }
 if ("IntersectionObserver" in window) new IntersectionObserver((e) => { if (e[0].isIntersecting) fillViewport(); }, { rootMargin: "800px" }).observe($("sentinel"));
 $("moreBtn").onclick = () => showMore();
@@ -471,6 +492,7 @@ function syncCartButtons() {
 }
 function addToCart(id, openAfter) {
   const p = byId.get(id); if (!p) return;
+  if (p.isSold) return toast("Sorry, this piece is sold out.");
   if (inCart(id)) { if (openAfter) openCart(); else toast("Already in your cart. Only 1 left!"); return; }
   cart.push({ id, name: p.title + (p.size ? ` (Size ${p.size})` : ""), price: p.price });
   updateBadge(); syncCartButtons();
@@ -520,7 +542,7 @@ $("closeDialog").onclick = () => $("orderDialog").close();
 
 function runSearch(v) { query = v; $("q").value = v; location.hash = "#fashion"; showView("fashion"); renderGrid(); fillViewport(); }
 $("searchForm").addEventListener("submit", (e) => { e.preventDefault(); runSearch($("q").value); });
-$("q").addEventListener("input", (e) => { query = e.target.value; renderGrid(); if (query.trim()) { if (location.hash !== "#fashion") location.hash = "#fashion"; } });
+$("q").addEventListener("input", (e) => { query = e.target.value; renderGrid(); if (query.trim() && location.hash !== "#fashion") location.hash = "#fashion"; });
 addEventListener("hashchange", () => setTimeout(fillViewport, 0));
 
 /* ===================== SECRET ADMIN PANEL =====================
@@ -541,21 +563,24 @@ $("keyForm").addEventListener("submit", (e) => {
 });
 $("adminClose").onclick = () => $("adminDialog").close();
 
-// Shrink the photo (keeps pages fast) and save it as a JPEG. 1000px is enough to inspect fabric details.
+// Shrink the photo to 1000px. PNG/WebP keep their transparent background (ghost-mannequin cut-outs); JPEGs are re-saved as JPEG.
 function loadImage(file) {
   return new Promise((res, rej) => { const u = URL.createObjectURL(file), im = new Image();
     im.onload = () => { URL.revokeObjectURL(u); res(im); }; im.onerror = () => rej(new Error("Could not read that image.")); im.src = u; });
 }
-async function toJpeg(file) {
+async function prepPhoto(file) {
   const im = await loadImage(file), k = Math.min(1, 1000 / Math.max(im.width, im.height)), w = Math.round(im.width * k), h = Math.round(im.height * k);
   const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
-  const ctx = cv.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); ctx.drawImage(im, 0, 0, w, h);
-  return new Promise((res, rej) => cv.toBlob((b) => (b ? res(b) : rej(new Error("Could not process that image."))), "image/jpeg", 0.86));
+  const ctx = cv.getContext("2d"), alpha = /png|webp|gif/.test(file.type);
+  if (!alpha) { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); }
+  ctx.drawImage(im, 0, 0, w, h);
+  return new Promise((res, rej) => cv.toBlob((b) => (b ? res(b) : rej(new Error("Could not process that image."))), alpha ? "image/png" : "image/jpeg", 0.88));
 }
 function renderUploads() {
   const ups = products.filter((p) => p.uploaded);
-  $("uploadList").innerHTML = ups.length ? ups.map((u) => `<li class="flex items-center gap-3 rounded-lg bg-black p-2"><img src="${esc(u.img)}" alt="" class="h-12 w-12 rounded bg-neutral-900 object-cover">
-    <span class="min-w-0 flex-1"><b class="block truncate text-white">${esc(u.title)}</b><span class="text-xs text-neutral-500">${ugx(u.price)} · ${esc(u.size)} · ${esc(u.cond)}</span></span>
+  $("uploadList").innerHTML = ups.length ? ups.map((u) => `<li class="flex items-center gap-3 rounded-lg bg-black p-2"><img src="${esc(u.img)}" alt="" class="h-12 w-12 rounded bg-neutral-900 object-contain">
+    <span class="min-w-0 flex-1"><b class="block truncate text-white">${esc(u.title)}</b><span class="text-xs ${u.isSold ? "text-red-400" : "text-neutral-500"}">${ugx(u.price)} · ${esc(u.size)} · ${u.isSold ? "SOLD OUT" : "Available"}</span></span>
+    <button data-sold="${esc(u.id)}" class="rounded px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800">${u.isSold ? "Reopen" : "Mark sold"}</button>
     <button data-del="${esc(u.id)}" class="rounded px-3 py-2 text-xs text-red-300 hover:bg-neutral-800">Delete</button></li>`).join("") : '<li class="text-neutral-500">Nothing uploaded yet.</li>';
 }
 $("aFile").onchange = (e) => { const f = e.target.files[0], im = $("aPreview"); if (f) { im.src = URL.createObjectURL(f); im.classList.remove("hidden"); } else im.classList.add("hidden"); };
@@ -566,30 +591,38 @@ $("adminForm").addEventListener("submit", async (e) => {
   if (!f || !title || !(price > 0)) return;
   $("aSubmit").disabled = true; $("aSubmit").textContent = "Saving…";
   try {
-    const photo = await toJpeg(f), id = "u-" + Date.now();
+    const photo = await prepPhoto(f), id = "u-" + Date.now();
     const rec = { id, title, price, size: $("aSize").value, chest: $("aChest").value, waist: $("aWaist").value, length: $("aLength").value, fabric: $("aFabric").value.trim(),
-                  cond: $("aCond").value, note: $("aNote").value.trim(), photo, createdAt: Date.now() };
+                  note: $("aNote").value.trim(), photo, isSold: false, createdAt: Date.now() };
     let saved = true; try { await dbPut(rec); } catch (_) { saved = false; }
     const item = normalize({ ...rec, img: URL.createObjectURL(photo), uploaded: true });
     products.unshift(item); byId.set(item.id, item);                     // fills the first free slot immediately
-    toast(saved ? `${title} added to the shop` : "Added for this visit only (browser storage unavailable)");
+    toast(saved ? `${title} added to the collection` : "Added for this visit only (browser storage unavailable)");
     e.target.reset(); $("aPreview").classList.add("hidden");
     renderUploads(); renderGrid();
   } catch (err) { $("aErr").textContent = err.message || "Something went wrong."; $("aErr").classList.remove("hidden"); }
-  $("aSubmit").disabled = false; $("aSubmit").textContent = "Add to shop";
+  $("aSubmit").disabled = false; $("aSubmit").textContent = "Add to the collection";
 });
 $("uploadList").addEventListener("click", async (e) => {
-  const b = e.target.closest("[data-del]"); if (!b) return;
-  const id = b.dataset.del, i = products.findIndex((p) => p.id === id);
-  if (i > -1) products.splice(i, 1); byId.delete(id);
-  const c = cart.findIndex((x) => x.id === id); if (c > -1) { cart.splice(c, 1); updateBadge(); }
-  try { await dbDel(id); } catch (_) {}
-  renderUploads(); renderGrid();
+  const s = e.target.closest("[data-sold]"), d = e.target.closest("[data-del]");
+  if (s) {                                                                // toggle isSold on an uploaded piece
+    const p = byId.get(s.dataset.sold); if (!p) return;
+    p.isSold = !p.isSold; p._rec.isSold = p.isSold;
+    try { await dbPut(p._rec); } catch (_) {}
+    if (p.isSold) { const c = cart.findIndex((x) => x.id === p.id); if (c > -1) { cart.splice(c, 1); updateBadge(); } }
+    renderUploads(); renderGrid();
+  } else if (d) {
+    const id = d.dataset.del, i = products.findIndex((p) => p.id === id);
+    if (i > -1) products.splice(i, 1); byId.delete(id);
+    const c = cart.findIndex((x) => x.id === id); if (c > -1) { cart.splice(c, 1); updateBadge(); }
+    try { await dbDel(id); } catch (_) {}
+    renderUploads(); renderGrid();
+  }
 });
 
 /* ===================== START ===================== */
-renderHero(); renderGrid(); updateBadge(); showView(location.hash.slice(1));      // draws 5 empty slots instantly
-loadData().then(() => { renderGrid(); renderUploads(); fillViewport(); });         // then fills them with real products
+renderHero(); paintTheme(); renderGrid(); updateBadge(); showView(location.hash.slice(1));      // draws 5 empty slots instantly
+loadData().then(() => { paintTheme(); renderGrid(); renderUploads(); fillViewport(); });         // then loads the theme and fills the slots
 </script>
 </body>
 </html>
